@@ -35,6 +35,6 @@ snxData.exchanges.since().then(exchanges => console.log(exchanges));
 ```html
 <script src="//cdn.jsdelivr.net/npm/synthetix-data/index.min.js"></script>
 <script>
-  window.snxData.exchanges.since().then(console.log);
+	window.snxData.exchanges.since().then(console.log);
 </script>
 ```
