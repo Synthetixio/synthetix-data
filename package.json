@@ -1,7 +1,7 @@
 {
 	"name": "synthetix-data",
 	"license": "MIT",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"author": "Synthetix",
 	"main": "index.js",
 	"browser": "index.min.js",
