@@ -1,4 +1,4 @@
-// UMD wrapper to support both nodejs (8  +) and modern browser (with fetch)
+// UMD wrapper to support both nodejs (8+) and modern browser (with fetch) (no AMD)
 // UMD via https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
 (function(root, factory) {
 	/* eslint-disable-next-line no-undef */
@@ -29,7 +29,7 @@
 			return fetch(api, {
 				method: 'POST',
 				// remove tabs and other control codes from body
-				body: queryCreator({ skip }).replace(/\n+/g, ''),
+				body: queryCreator({ skip }).replace(/(\n|\t)+/g, ''),
 			})
 				.then(response => response.json())
 				.then(json => {
@@ -72,29 +72,29 @@
 					field: 'userActions',
 					queryCreator: ({ skip }) =>
 						`{
-              "query": "{
-                userActions(
-                  first:${PAGE_SIZE},
-                  skip:${skip},
-                  orderBy:timestamp,
-                  orderDirection:desc,
-                  where: {
-                    network: \\"${network}\\",
-                    user: \\"${user}\\"
-                  }
-                ){
-                  id,
-                  user
-                  amount,
-                  minimum,
-                  depositIndex,
-                  type,
-                  block,
-                  timestamp
-                }
-              }",
-              "variables": null
-            }`,
+							"query": "{
+								userActions(
+									first:${PAGE_SIZE},
+									skip:${skip},
+									orderBy:timestamp,
+									orderDirection:desc,
+									where: {
+										network: \\"${network}\\",
+										user: \\"${user}\\"
+									}
+								){
+									id,
+									user
+									amount,
+									minimum,
+									depositIndex,
+									type,
+									block,
+									timestamp
+								}
+							}",
+							"variables": null
+						}`,
 				})
 					.then(results =>
 						results.map(({ id, user, amount, type, minimum, depositIndex, block, timestamp }) => ({
@@ -117,30 +117,30 @@
 					field: 'clearedDeposits',
 					queryCreator: ({ skip }) =>
 						`{
-              "query": "{
-                clearedDeposits(
-                  first:${PAGE_SIZE},
-                  skip:${skip},
-                  orderBy:timestamp,
-                  orderDirection:desc,
-                  where: {
-                    network: \\"${network}\\"
-                    ${fromAddress ? `,fromAddress: \\"${fromAddress}\\"` : ''}
-                    ${toAddress ? `,toAddress: \\"${toAddress}\\"` : ''}
-                  }
-                ){
-                  id,
-                  fromAddress,
-                  toAddress,
-                  fromETHAmount,
-                  toAmount,
-                  depositIndex,
-                  block,
-                  timestamp
-                }
-              }",
-              "variables": null
-            }`,
+							"query": "{
+								clearedDeposits(
+									first:${PAGE_SIZE},
+									skip:${skip},
+									orderBy:timestamp,
+									orderDirection:desc,
+									where: {
+										network: \\"${network}\\"
+										${fromAddress ? `,fromAddress: \\"${fromAddress}\\"` : ''}
+										${toAddress ? `,toAddress: \\"${toAddress}\\"` : ''}
+									}
+								){
+									id,
+									fromAddress,
+									toAddress,
+									fromETHAmount,
+									toAmount,
+									depositIndex,
+									block,
+									timestamp
+								}
+							}",
+							"variables": null
+						}`,
 				})
 					.then(results =>
 						results.map(({ id, fromAddress, toAddress, fromETHAmount, toAmount, depositIndex, block, timestamp }) => ({
@@ -168,21 +168,21 @@
 					field: 'totals',
 					queryCreator: () =>
 						`{
-              "query": "{
-                totals(
-                  first: 1,
-                  where: {
-                    id: \\"${network}\\"
-                  }
-                ){
-                  id,
-                  exchangers,
-                  exchangeUSDTally,
-                  totalFeesGeneratedInUSD
-                }
-              }",
-              "variables": null
-            }`,
+							"query": "{
+								totals(
+									first: 1,
+									where: {
+										id: \\"${network}\\"
+									}
+								){
+									id,
+									exchangers,
+									exchangeUSDTally,
+									totalFeesGeneratedInUSD
+								}
+							}",
+							"variables": null
+						}`,
 				})
 					.then(([{ id, exchangers, exchangeUSDTally, totalFeesGeneratedInUSD }]) => ({
 						id,
@@ -204,35 +204,35 @@
 					field: 'synthExchanges',
 					queryCreator: ({ skip }) =>
 						`{
-              "query":"{
-                synthExchanges(
-                  first:${PAGE_SIZE},
-                  skip:${skip},
-                  orderBy:timestamp,
-                  orderDirection:desc,
-                  where:{
-                    network: \\"${network}\\",
-                    timestamp_gt: ${timestampInSecs}
-                  }
-                ){
-                  id,
-                  from,
-                  gasPrice,
-                  from,
-                  fromAmount,
-                  fromAmountInUSD,
-                  fromCurrencyKey,
-                  toCurrencyKey,
-                  toAddress,
-                  toAmount,
-                  toAmountInUSD,
-                  feesInUSD,
-                  block,
-                  timestamp
-                }
-              }",
-              "variables":null
-            }`,
+							"query":"{
+								synthExchanges(
+									first:${PAGE_SIZE},
+									skip:${skip},
+									orderBy:timestamp,
+									orderDirection:desc,
+									where:{
+										network: \\"${network}\\",
+										timestamp_gt: ${timestampInSecs}
+									}
+								){
+									id,
+									from,
+									gasPrice,
+									from,
+									fromAmount,
+									fromAmountInUSD,
+									fromCurrencyKey,
+									toCurrencyKey,
+									toAddress,
+									toAmount,
+									toAmountInUSD,
+									feesInUSD,
+									block,
+									timestamp
+								}
+							}",
+							"variables":null
+						}`,
 				})
 					.then(results =>
 						results.map(
