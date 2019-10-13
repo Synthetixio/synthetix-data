@@ -325,6 +325,40 @@
 					}))
 					.catch(err => console.error(err));
 			},
+			/**
+			 * Get the latest SNX transfers
+			 */
+			transfers({ from = undefined, to = undefined, max = 100 } = {}) {
+				return pageResults({
+					api: graphAPIEndpoints.snx,
+					max,
+					query: {
+						entity: 'transfers',
+						selection: {
+							orderBy: 'timestamp',
+							orderDirection: 'desc',
+							where: {
+								source: '\\"SNX\\"',
+								from: from ? `\\"${from}\\"` : undefined,
+								to: to ? `\\"${to}\\"` : undefined,
+							},
+						},
+						properties: ['id', 'to', 'from', 'value', 'block', 'timestamp'],
+					},
+				})
+					.then(results =>
+						results.map(({ id, block, timestamp, from, to, value }) => ({
+							block: Number(block),
+							timestamp: Number(timestamp * 1000),
+							date: new Date(timestamp * 1000),
+							hash: id.split('-')[0],
+							from,
+							to,
+							value: value / 1e18,
+						})),
+					)
+					.catch(err => console.error(err));
+			},
 		},
 	};
 });

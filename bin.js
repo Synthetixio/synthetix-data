@@ -43,4 +43,13 @@ program.command('snx.total').action(async () => {
 	snx.total().then(console.log);
 });
 
+program
+	.command('snx.transfers')
+	.option('-f, --from <value>', 'A from address')
+	.option('-t, --to <value>', 'A to address')
+	.option('m, --max <value>', 'Maximum number of results', 100)
+	.action(async ({ from, to, max }) => {
+		snx.transfers({ from, to, max }).then(console.log);
+	});
+
 program.parse(process.argv);
