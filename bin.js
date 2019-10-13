@@ -36,4 +36,9 @@ program.command('synths.issuers').action(async () => {
 program.command('snx.holders').action(async () => {
 	snx.holders().then(console.log);
 });
+
+program.command('snx.total').action(async () => {
+	snx.total().then(console.log);
+});
+
 program.parse(process.argv);

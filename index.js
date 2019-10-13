@@ -299,11 +299,11 @@
 			holders() {
 				return pageResults({
 					api: graph.snx,
-					field: 'snxHolders',
+					field: 'snxholders',
 					queryCreator: ({ skip }) =>
 						`{
 							"query":"{
-								snxHolders(
+								snxholders(
 									first:${PAGE_SIZE},
 									skip:${skip}
 								){
@@ -314,6 +314,36 @@
 						}`,
 				})
 					.then(results => results.map(({ id }) => id))
+					.catch(err => console.error(err));
+			},
+			/**
+			 * Get the exchange totals for the given network.
+			 */
+			total() {
+				return pageResults({
+					api: graph.snx,
+					field: 'synthetixes',
+					queryCreator: () =>
+						`{
+							"query": "{
+								synthetixes(
+									first: 1,
+									where: {
+										id: \\"1\\"
+									}
+								){
+									id,
+                  issuers,
+                  snxHolders
+								}
+							}",
+							"variables": null
+						}`,
+				})
+					.then(([{ issuers, snxHolders }]) => ({
+						issuers: Number(issuers),
+						snxHolders: Number(snxHolders),
+					}))
 					.catch(err => console.error(err));
 			},
 		},
