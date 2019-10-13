@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const program = require('commander');
-const { exchanges, depot } = require('.');
+const { exchanges, depot, synths } = require('.');
 
 program
 	.command('depot.userActions')
@@ -28,5 +28,9 @@ program
 	.action(async () => {
 		exchanges.since().then(console.log);
 	});
+
+program.command('synths.issuers').action(async () => {
+	synths.issuers().then(console.log);
+});
 
 program.parse(process.argv);

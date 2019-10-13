@@ -273,5 +273,27 @@
 					.catch(err => console.error(err));
 			},
 		},
+		synths: {
+			issuers() {
+				return pageResults({
+					api: graph.snx,
+					field: 'issuers',
+					queryCreator: ({ skip }) =>
+						`{
+							"query":"{
+								issuers(
+									first:${PAGE_SIZE},
+									skip:${skip}
+								){
+									id,
+								}
+							}",
+							"variables":null
+						}`,
+				})
+					.then(results => results.map(({ id }) => id))
+					.catch(err => console.error(err));
+			},
+		},
 	};
 });
