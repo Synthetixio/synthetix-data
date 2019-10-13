@@ -295,5 +295,27 @@
 					.catch(err => console.error(err));
 			},
 		},
+		snx: {
+			holders() {
+				return pageResults({
+					api: graph.snx,
+					field: 'snxHolders',
+					queryCreator: ({ skip }) =>
+						`{
+							"query":"{
+								snxHolders(
+									first:${PAGE_SIZE},
+									skip:${skip}
+								){
+									id,
+								}
+							}",
+							"variables":null
+						}`,
+				})
+					.then(results => results.map(({ id }) => id))
+					.catch(err => console.error(err));
+			},
+		},
 	};
 });
