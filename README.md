@@ -13,8 +13,10 @@ This is a collection of utilities to query Synthetix data from Ethereum. This da
 3. `depot.userActions({ user })` Get all depot deposit (`sUSD`) actions for the given user - `deposit`, `withdrawl`, `unaccepted`, `removed`.
 4. `depot.clearedDeposits({ fromAddress, toAddress })` Get all cleared synth deposits (payments of `ETH` for `sUSD`) either from a given `fromAddress` or (and as well as) to a given `toAddress`
 5. `synths.issuers` Get all wallets that have invoked `Issue` on `sUSD` (other synths to come)
-6. `snx.total` Get total count of unique `issuers` and `snxHolders`
-7. `snx.holders` Get all wallets that have ever sent or received `SNX`.
+6. `synths.transfers` Get synth transfers in reverse chronological order
+7. `snx.total` Get the total count of unique `issuers` and `snxHolders`
+8. `snx.holders` Get the list of wallets that have ever sent or received `SNX`.
+9. `snx.transfers` Get SNX transfers in reverse chronological order
 
 ## How to query via the npm library (CLE)
 

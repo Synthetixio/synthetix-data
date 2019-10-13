@@ -288,6 +288,42 @@
 					.then(results => results.map(({ id }) => id))
 					.catch(err => console.error(err));
 			},
+			/**
+			 * Get the latest synth transfers
+			 */
+			transfers({ synth = undefined, from = undefined, to = undefined, max = 100 } = {}) {
+				return pageResults({
+					api: graphAPIEndpoints.snx,
+					max,
+					query: {
+						entity: 'transfers',
+						selection: {
+							orderBy: 'timestamp',
+							orderDirection: 'desc',
+							where: {
+								source: synth ? `\\"${synth}\\"` : undefined,
+								source_not: '\\"SNX\\"',
+								from: from ? `\\"${from}\\"` : undefined,
+								to: to ? `\\"${to}\\"` : undefined,
+							},
+						},
+						properties: ['id', 'source', 'to', 'from', 'value', 'block', 'timestamp'],
+					},
+				})
+					.then(results =>
+						results.map(({ id, source, block, timestamp, from, to, value }) => ({
+							source,
+							block: Number(block),
+							timestamp: Number(timestamp * 1000),
+							date: new Date(timestamp * 1000),
+							hash: id.split('-')[0],
+							from,
+							to,
+							value: value / 1e18,
+						})),
+					)
+					.catch(err => console.error(err));
+			},
 		},
 		snx: {
 			holders({ max = 100 } = {}) {

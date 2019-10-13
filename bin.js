@@ -33,6 +33,16 @@ program.command('synths.issuers').action(async () => {
 });
 
 program
+	.command('synths.transfers')
+	.option('-f, --from <value>', 'A from address')
+	.option('-t, --to <value>', 'A to address')
+	.option('m, --max <value>', 'Maximum number of results', 100)
+	.option('s, --synth <value>', 'Synth code')
+	.action(async ({ synth, from, to, max }) => {
+		synths.transfers({ synth, from, to, max }).then(console.log);
+	});
+
+program
 	.command('snx.holders')
 	.option('m, --max <value>', 'Maximum number of results', 100)
 	.action(async ({ max }) => {
