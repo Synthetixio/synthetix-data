@@ -15,21 +15,50 @@
 })(typeof self !== 'undefined' ? self : this, function(fetch) {
 	'use strict';
 
-	const graph = {
+	const graphAPIEndpoints = {
 		snx: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix',
 		depot: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-depot',
 		exchanges: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-exchanges',
 		rates: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-rates',
 	};
 
-	const PAGE_SIZE = 100; // graph limitation'
+	const MAX_PAGE_SIZE = 1000; // The Graph max page size
 
-	const pageResults = ({ api, queryCreator, field }) => {
+	/**
+	 * Page results from The Graph protocol
+	 *
+	 * @param {string} api - The API address
+	 * @param {Object} query - The Query object
+	 * @param {string} query.entity - The entity name
+	 * @param {Object} query.selection - The selection mapping object for GraphQL filters and sorts
+	 * @param {Object} query.properties - The list of fields to include in the output
+	 * @param {number} max - Maximum number of results to return (default: Infinity)
+	 */
+	const pageResults = ({ api, query: { entity, selection = {}, properties = [] }, max = Infinity }) => {
+		max = Number(max);
+		const pageSize = MAX_PAGE_SIZE;
+
 		const runner = ({ skip }) => {
+			const propToString = obj =>
+				Object.entries(obj)
+					.filter(([, value]) => typeof value !== 'undefined')
+					.map(([key, value]) => `${key}:${typeof value === 'object' ? '{' + propToString(value) + '}' : value}`)
+					.join(',');
+
+			const first = skip + pageSize > max ? max % pageSize : pageSize;
+
+			// mix the page size and skip fields into the selection object
+			const selectionObj = Object.assign({}, selection, {
+				first,
+				skip,
+			});
+
+			const body = `{"query":"{${entity}(${propToString(selectionObj)}){${properties.join(',')}}}", "variables": null}`;
+
+			console.log(body);
 			return fetch(api, {
 				method: 'POST',
-				// remove tabs and other control codes from body
-				body: queryCreator({ skip }).replace(/(\n|\t)+/g, ''),
+				body,
 			})
 				.then(response => response.json())
 				.then(json => {
@@ -37,14 +66,15 @@
 						throw Error(JSON.stringify(json.errors));
 					}
 					const {
-						data: { [field]: results },
+						data: { [entity]: results },
 					} = json;
 
-					if (results.length < PAGE_SIZE) {
+					// stop if we are on the last page or if
+					if (results.length < pageSize || Math.min(max, skip + results.length) >= max) {
 						return results;
 					}
 
-					return runner({ skip: skip + PAGE_SIZE }).then(newResults => results.concat(newResults));
+					return runner({ skip: skip + pageSize }).then(newResults => results.concat(newResults));
 				});
 		};
 
@@ -65,36 +95,24 @@
 
 	return {
 		pageResults,
+		graphAPIEndpoints,
 		depot: {
-			userActions({ network = 'mainnet', user }) {
+			userActions({ network = 'mainnet', user = undefined, max = 100 }) {
 				return pageResults({
-					api: graph.depot,
-					field: 'userActions',
-					queryCreator: ({ skip }) =>
-						`{
-							"query": "{
-								userActions(
-									first:${PAGE_SIZE},
-									skip:${skip},
-									orderBy:timestamp,
-									orderDirection:desc,
-									where: {
-										network: \\"${network}\\",
-										user: \\"${user}\\"
-									}
-								){
-									id,
-									user
-									amount,
-									minimum,
-									depositIndex,
-									type,
-									block,
-									timestamp
-								}
-							}",
-							"variables": null
-						}`,
+					api: graphAPIEndpoints.depot,
+					query: {
+						entity: 'userActions',
+						selection: {
+							orderBy: 'timestamp',
+							orderDirection: 'desc',
+							where: {
+								network: `\\"${network}\\"`,
+								user: user ? `\\"${user}\\"` : undefined,
+							},
+						},
+						properties: ['id', 'user', 'amount', 'minimum', 'depositIndex', 'type', 'block', 'timestamp'],
+					},
+					max,
 				})
 					.then(results =>
 						results.map(({ id, user, amount, type, minimum, depositIndex, block, timestamp }) => ({
@@ -111,36 +129,32 @@
 					)
 					.catch(err => console.error(err));
 			},
-			clearedDeposits({ network = 'mainnet', fromAddress = undefined, toAddress = undefined }) {
+			clearedDeposits({ network = 'mainnet', fromAddress = undefined, toAddress = undefined, max = 100 }) {
 				return pageResults({
-					api: graph.depot,
-					field: 'clearedDeposits',
-					queryCreator: ({ skip }) =>
-						`{
-							"query": "{
-								clearedDeposits(
-									first:${PAGE_SIZE},
-									skip:${skip},
-									orderBy:timestamp,
-									orderDirection:desc,
-									where: {
-										network: \\"${network}\\"
-										${fromAddress ? `,fromAddress: \\"${fromAddress}\\"` : ''}
-										${toAddress ? `,toAddress: \\"${toAddress}\\"` : ''}
-									}
-								){
-									id,
-									fromAddress,
-									toAddress,
-									fromETHAmount,
-									toAmount,
-									depositIndex,
-									block,
-									timestamp
-								}
-							}",
-							"variables": null
-						}`,
+					api: graphAPIEndpoints.depot,
+					query: {
+						entity: 'clearedDeposits',
+						selection: {
+							orderBy: 'timestamp',
+							orderDirection: 'desc',
+							where: {
+								network: `\\"${network}\\"`,
+								fromAddress: fromAddress ? `\\"${fromAddress}\\"` : undefined,
+								toAddress: toAddress ? `\\"${toAddress}\\"` : undefined,
+							},
+						},
+						properties: [
+							'id',
+							'fromAddress',
+							'toAddress',
+							'fromETHAmount',
+							'toAmount',
+							'depositIndex',
+							'block',
+							'timestamp',
+						],
+					},
+					max,
 				})
 					.then(results =>
 						results.map(({ id, fromAddress, toAddress, fromETHAmount, toAmount, depositIndex, block, timestamp }) => ({
@@ -164,28 +178,19 @@
 			 */
 			total({ network = 'mainnet' } = {}) {
 				return pageResults({
-					api: graph.exchanges,
-					field: 'totals',
-					queryCreator: () =>
-						`{
-							"query": "{
-								totals(
-									first: 1,
-									where: {
-										id: \\"${network}\\"
-									}
-								){
-									id,
-									exchangers,
-									exchangeUSDTally,
-									totalFeesGeneratedInUSD
-								}
-							}",
-							"variables": null
-						}`,
+					api: graphAPIEndpoints.exchanges,
+					query: {
+						entity: 'totals',
+						selection: {
+							where: {
+								id: `\\"${network}\\"`,
+							},
+						},
+						properties: ['exchangers', 'exchangeUSDTally', 'totalFeesGeneratedInUSD'],
+					},
+					max: 1,
 				})
-					.then(([{ id, exchangers, exchangeUSDTally, totalFeesGeneratedInUSD }]) => ({
-						id,
+					.then(([{ exchangers, exchangeUSDTally, totalFeesGeneratedInUSD }]) => ({
 						exchangers: Number(exchangers),
 						exchangeUSDTally: exchangeUSDTally / 1e18,
 						totalFeesGeneratedInUSD: totalFeesGeneratedInUSD / 1e18,
@@ -200,39 +205,34 @@
 				timestampInSecs = Math.floor(Date.now() / 1e3) - 3600 * 24 /* default is 1 day ago */,
 			} = {}) {
 				return pageResults({
-					api: graph.exchanges,
-					field: 'synthExchanges',
-					queryCreator: ({ skip }) =>
-						`{
-							"query":"{
-								synthExchanges(
-									first:${PAGE_SIZE},
-									skip:${skip},
-									orderBy:timestamp,
-									orderDirection:desc,
-									where:{
-										network: \\"${network}\\",
-										timestamp_gt: ${timestampInSecs}
-									}
-								){
-									id,
-									from,
-									gasPrice,
-									from,
-									fromAmount,
-									fromAmountInUSD,
-									fromCurrencyKey,
-									toCurrencyKey,
-									toAddress,
-									toAmount,
-									toAmountInUSD,
-									feesInUSD,
-									block,
-									timestamp
-								}
-							}",
-							"variables":null
-						}`,
+					api: graphAPIEndpoints.exchanges,
+					query: {
+						entity: 'synthExchanges',
+						selection: {
+							orderBy: 'timestamp',
+							orderDirection: 'desc',
+							where: {
+								network: `\\"${network}\\"`,
+								timestamp_gt: timestampInSecs,
+							},
+						},
+						properties: [
+							'id',
+							'from',
+							'gasPrice',
+							'from',
+							'fromAmount',
+							'fromAmountInUSD',
+							'fromCurrencyKey',
+							'toCurrencyKey',
+							'toAddress',
+							'toAmount',
+							'toAmountInUSD',
+							'feesInUSD',
+							'block',
+							'timestamp',
+						],
+					},
 				})
 					.then(results =>
 						results.map(
@@ -274,44 +274,28 @@
 			},
 		},
 		synths: {
-			issuers() {
+			issuers({ max = 10 } = {}) {
 				return pageResults({
-					api: graph.snx,
-					field: 'issuers',
-					queryCreator: ({ skip }) =>
-						`{
-							"query":"{
-								issuers(
-									first:${PAGE_SIZE},
-									skip:${skip}
-								){
-									id,
-								}
-							}",
-							"variables":null
-						}`,
+					api: graphAPIEndpoints.snx,
+					max,
+					query: {
+						entity: 'issuers',
+						properties: ['id'],
+					},
 				})
 					.then(results => results.map(({ id }) => id))
 					.catch(err => console.error(err));
 			},
 		},
 		snx: {
-			holders() {
+			holders({ max = 100 } = {}) {
 				return pageResults({
-					api: graph.snx,
-					field: 'snxholders',
-					queryCreator: ({ skip }) =>
-						`{
-							"query":"{
-								snxholders(
-									first:${PAGE_SIZE},
-									skip:${skip}
-								){
-									id,
-								}
-							}",
-							"variables":null
-						}`,
+					api: graphAPIEndpoints.snx,
+					max,
+					query: {
+						entity: 'snxholders',
+						properties: ['id'],
+					},
 				})
 					.then(results => results.map(({ id }) => id))
 					.catch(err => console.error(err));
@@ -321,24 +305,17 @@
 			 */
 			total() {
 				return pageResults({
-					api: graph.snx,
-					field: 'synthetixes',
-					queryCreator: () =>
-						`{
-							"query": "{
-								synthetixes(
-									first: 1,
-									where: {
-										id: \\"1\\"
-									}
-								){
-									id,
-                  issuers,
-                  snxHolders
-								}
-							}",
-							"variables": null
-						}`,
+					api: graphAPIEndpoints.snx,
+					query: {
+						entity: 'synthetixes',
+						selection: {
+							where: {
+								id: 1,
+							},
+						},
+						properties: ['issuers', 'snxHolders'],
+					},
+					max: 1,
 				})
 					.then(([{ issuers, snxHolders }]) => ({
 						issuers: Number(issuers),

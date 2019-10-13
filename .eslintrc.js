@@ -20,7 +20,7 @@ module.exports = {
 		quotes: ['error', 'single'],
 		'import/no-unresolved': [2, { commonjs: true }],
 		'no-undef': 2,
-		'prefer-const': 0,
+		'prefer-const': 2,
 		semi: ['error', 'always'],
 		'no-console': 0,
 		'@typescript-eslint/explicit-member-accessibility': 0,
