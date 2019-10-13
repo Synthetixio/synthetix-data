@@ -58,7 +58,6 @@
 
 			const body = `{"query":"{${entity}(${propToString(selectionObj)}){${properties.join(',')}}}", "variables": null}`;
 
-			console.log(body);
 			return fetch(api, {
 				method: 'POST',
 				body,
