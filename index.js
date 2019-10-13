@@ -38,6 +38,9 @@
 		max = Number(max);
 		const pageSize = MAX_PAGE_SIZE;
 
+		// Note: this approach will call each page in linear order, ensuring it stops as soon as all results
+		// are fetched. This could be sped up with a number of requests done in parallel, stopping as soon as any return
+		// empty. - JJM
 		const runner = ({ skip }) => {
 			const propToString = obj =>
 				Object.entries(obj)
