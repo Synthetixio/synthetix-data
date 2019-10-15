@@ -24,9 +24,19 @@ program.command('exchanges.total').action(async () => {
 	exchanges.total().then(console.log);
 });
 
-program.command('exchanges.since').action(async () => {
-	exchanges.since().then(console.log);
-});
+program
+	.command('exchanges.since')
+	.option(
+		'-t, --timestampInSecs <value>',
+		'Timestamp',
+		parseInt,
+		Math.floor(Date.now() / 1e3) - 3600 * 24, //default is 1 day ago
+	)
+	.option('b, --minBlock <value>', 'The smallest block to include, if any')
+	.option('m, --max <value>', 'Maximum number of results')
+	.action(async ({ timestampInSecs, minBlock, max }) => {
+		exchanges.since({ timestampInSecs, minBlock, max }).then(console.log);
+	});
 
 program.command('synths.issuers').action(async () => {
 	synths.issuers().then(console.log);

@@ -76,7 +76,7 @@
 						data: { [entity]: results },
 					} = json;
 
-					// stop if we are on the last page or if
+					// stop if we are on the last page
 					if (results.length < pageSize || Math.min(max, skip + results.length) >= max) {
 						return results;
 					}
@@ -205,14 +205,12 @@
 					.catch(err => console.error(err));
 			},
 			/**
-			 * Get all exchanges since some timestamp in seconds (ordered reverse chronological)
+			 * Get all exchanges since some timestamp in seconds or minimum block (ordered reverse chronological)
 			 */
-			since({
-				network = 'mainnet',
-				timestampInSecs = Math.floor(Date.now() / 1e3) - 3600 * 24 /* default is 1 day ago */,
-			} = {}) {
+			since({ network = 'mainnet', max = Infinity, timestampInSecs = undefined, minBlock = undefined } = {}) {
 				return pageResults({
 					api: graphAPIEndpoints.exchanges,
+					max,
 					query: {
 						entity: 'synthExchanges',
 						selection: {
@@ -220,7 +218,8 @@
 							orderDirection: 'desc',
 							where: {
 								network: `\\"${network}\\"`,
-								timestamp_gt: timestampInSecs,
+								timestamp_gt: timestampInSecs || undefined,
+								block_gte: minBlock || undefined,
 							},
 						},
 						properties: [
@@ -348,7 +347,7 @@
 							where: {
 								synth: synth ? `\\"${synth}\\"` : undefined,
 								synth_not_in: '[' + ['SNX', 'ETH', 'XDR'].map(code => `\\"${code}\\"`).join(',') + ']', // ignore non-synth prices
-								block_gt: minBlock || undefined,
+								block_gte: minBlock || undefined,
 							},
 						},
 						properties: ['id', 'synth', 'rate', 'block', 'timestamp'],
