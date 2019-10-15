@@ -207,7 +207,13 @@
 			/**
 			 * Get all exchanges since some timestamp in seconds or minimum block (ordered reverse chronological)
 			 */
-			since({ network = 'mainnet', max = Infinity, timestampInSecs = undefined, minBlock = undefined } = {}) {
+			since({
+				network = 'mainnet',
+				max = Infinity,
+				timestampInSecs = undefined,
+				minBlock = undefined,
+				maxBlock = undefined,
+			} = {}) {
 				return pageResults({
 					api: graphAPIEndpoints.exchanges,
 					max,
@@ -220,6 +226,7 @@
 								network: `\\"${network}\\"`,
 								timestamp_gt: timestampInSecs || undefined,
 								block_gte: minBlock || undefined,
+								block_lte: maxBlock || undefined,
 							},
 						},
 						properties: [
@@ -295,7 +302,14 @@
 			/**
 			 * Get the latest synth transfers
 			 */
-			transfers({ synth = undefined, from = undefined, to = undefined, max = 100, minBlock = undefined } = {}) {
+			transfers({
+				synth = undefined,
+				from = undefined,
+				to = undefined,
+				max = 100,
+				minBlock = undefined,
+				maxBlock = undefined,
+			} = {}) {
 				return pageResults({
 					api: graphAPIEndpoints.snx,
 					max,
@@ -312,6 +326,7 @@
 								from_not: `\\"${ZERO_ADDRESS}\\"`, // Ignore Issue events
 								to_not: `\\"${ZERO_ADDRESS}\\"`, // Ignore Burn events
 								block_gte: minBlock || undefined,
+								block_lte: maxBlock || undefined,
 							},
 						},
 						properties: ['id', 'source', 'to', 'from', 'value', 'block', 'timestamp'],
@@ -336,7 +351,7 @@
 			/**
 			 * Get the last max RateUpdate events for the given synth in reverse order
 			 */
-			updates({ synth, minBlock = undefined, max = 100 } = {}) {
+			updates({ synth, minBlock = undefined, maxBlock = undefined, max = 100 } = {}) {
 				return pageResults({
 					api: graphAPIEndpoints.rates,
 					max,
@@ -349,6 +364,7 @@
 								synth: synth ? `\\"${synth}\\"` : undefined,
 								synth_not_in: '[' + ['SNX', 'ETH', 'XDR'].map(code => `\\"${code}\\"`).join(',') + ']', // ignore non-synth prices
 								block_gte: minBlock || undefined,
+								block_lte: maxBlock || undefined,
 							},
 						},
 						properties: ['id', 'synth', 'rate', 'block', 'timestamp'],
@@ -406,7 +422,7 @@
 			/**
 			 * Get the latest SNX transfers
 			 */
-			transfers({ from = undefined, to = undefined, max = 100, minBlock = undefined } = {}) {
+			transfers({ from = undefined, to = undefined, max = 100, minBlock = undefined, maxBlock = undefined } = {}) {
 				return pageResults({
 					api: graphAPIEndpoints.snx,
 					max,
@@ -420,6 +436,7 @@
 								from: from ? `\\"${from}\\"` : undefined,
 								to: to ? `\\"${to}\\"` : undefined,
 								block_gte: minBlock || undefined,
+								block_lte: maxBlock || undefined,
 							},
 						},
 						properties: ['id', 'to', 'from', 'value', 'block', 'timestamp'],
