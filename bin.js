@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const program = require('commander');
-const { exchanges, depot, synths, rates, snx } = require('.');
+const { exchanges, depot, synths, rate, snx } = require('.');
 
 program
 	.command('depot.userActions')
@@ -43,11 +43,12 @@ program
 	});
 
 program
-	.command('rates.updateForSynth')
+	.command('rate.updates')
 	.option('m, --max <value>', 'Maximum number of results', 10)
+	.option('b, --minBlock <value>', 'The smallest block to include, if any')
 	.option('s, --synth <value>', 'Synth code')
-	.action(async ({ max, synth }) => {
-		rates.updateForSynth({ max, synth }).then(console.log);
+	.action(async ({ max, synth, minBlock }) => {
+		rate.updates({ max, synth, minBlock }).then(console.log);
 	});
 
 program

@@ -59,6 +59,10 @@
 
 			const body = `{"query":"{${entity}(${propToString(selectionObj)}){${properties.join(',')}}}", "variables": null}`;
 
+			if (process.env.DEBUG === 'true') {
+				console.log(body);
+			}
+
 			return fetch(api, {
 				method: 'POST',
 				body,
@@ -328,11 +332,11 @@
 					.catch(err => console.error(err));
 			},
 		},
-		rates: {
+		rate: {
 			/**
 			 * Get the last max RateUpdate events for the given synth in reverse order
 			 */
-			updateForSynth({ synth, max = 100 } = {}) {
+			updates({ synth, minBlock = undefined, max = 100 } = {}) {
 				return pageResults({
 					api: graphAPIEndpoints.rates,
 					max,
@@ -342,15 +346,18 @@
 							orderBy: 'timestamp',
 							orderDirection: 'desc',
 							where: {
-								synth: `\\"${synth}\\"`,
+								synth: synth ? `\\"${synth}\\"` : undefined,
+								synth_not_in: '[' + ['SNX', 'ETH', 'XDR'].map(code => `\\"${code}\\"`).join(',') + ']', // ignore non-synth prices
+								block_gt: minBlock || undefined,
 							},
 						},
-						properties: ['id', 'rate', 'block', 'timestamp'],
+						properties: ['id', 'synth', 'rate', 'block', 'timestamp'],
 					},
 				})
 					.then(results =>
-						results.map(({ id, rate, block, timestamp }) => ({
+						results.map(({ id, rate, block, timestamp, synth }) => ({
 							block: Number(block),
+							synth,
 							timestamp: Number(timestamp * 1000),
 							date: new Date(timestamp * 1000),
 							hash: id.split('-')[0],
