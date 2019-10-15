@@ -22,6 +22,7 @@
 		rates: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-rates',
 	};
 
+	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 	const MAX_PAGE_SIZE = 1000; // The Graph max page size
 
 	/**
@@ -305,6 +306,8 @@
 								source_not: '\\"SNX\\"',
 								from: from ? `\\"${from}\\"` : undefined,
 								to: to ? `\\"${to}\\"` : undefined,
+								from_not: `\\"${ZERO_ADDRESS}\\"`, // Ignore Issue events
+								to_not: `\\"${ZERO_ADDRESS}\\"`, // Ignore Burn events
 							},
 						},
 						properties: ['id', 'source', 'to', 'from', 'value', 'block', 'timestamp'],
