@@ -325,6 +325,38 @@
 					.catch(err => console.error(err));
 			},
 		},
+		rates: {
+			/**
+			 * Get the last max RateUpdate events for the given synth in reverse order
+			 */
+			updateForSynth({ synth, max = 100 } = {}) {
+				return pageResults({
+					api: graphAPIEndpoints.rates,
+					max,
+					query: {
+						entity: 'rateUpdates',
+						selection: {
+							orderBy: 'timestamp',
+							orderDirection: 'desc',
+							where: {
+								synth: `\\"${synth}\\"`,
+							},
+						},
+						properties: ['id', 'rate', 'block', 'timestamp'],
+					},
+				})
+					.then(results =>
+						results.map(({ id, rate, block, timestamp }) => ({
+							block: Number(block),
+							timestamp: Number(timestamp * 1000),
+							date: new Date(timestamp * 1000),
+							hash: id.split('-')[0],
+							rate: rate / 1e18,
+						})),
+					)
+					.catch(err => console.error(err));
+			},
+		},
 		snx: {
 			holders({ max = 100 } = {}) {
 				return pageResults({

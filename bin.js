@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const program = require('commander');
-const { exchanges, depot, synths, snx } = require('.');
+const { exchanges, depot, synths, rates, snx } = require('.');
 
 program
 	.command('depot.userActions')
@@ -40,6 +40,14 @@ program
 	.option('s, --synth <value>', 'Synth code')
 	.action(async ({ synth, from, to, max }) => {
 		synths.transfers({ synth, from, to, max }).then(console.log);
+	});
+
+program
+	.command('rates.updateForSynth')
+	.option('m, --max <value>', 'Maximum number of results', 10)
+	.option('s, --synth <value>', 'Synth code')
+	.action(async ({ max, synth }) => {
+		rates.updateForSynth({ max, synth }).then(console.log);
 	});
 
 program
