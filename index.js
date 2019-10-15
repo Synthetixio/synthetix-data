@@ -295,7 +295,7 @@
 			/**
 			 * Get the latest synth transfers
 			 */
-			transfers({ synth = undefined, from = undefined, to = undefined, max = 100 } = {}) {
+			transfers({ synth = undefined, from = undefined, to = undefined, max = 100, minBlock = undefined } = {}) {
 				return pageResults({
 					api: graphAPIEndpoints.snx,
 					max,
@@ -311,6 +311,7 @@
 								to: to ? `\\"${to}\\"` : undefined,
 								from_not: `\\"${ZERO_ADDRESS}\\"`, // Ignore Issue events
 								to_not: `\\"${ZERO_ADDRESS}\\"`, // Ignore Burn events
+								block_gte: minBlock || undefined,
 							},
 						},
 						properties: ['id', 'source', 'to', 'from', 'value', 'block', 'timestamp'],
@@ -405,7 +406,7 @@
 			/**
 			 * Get the latest SNX transfers
 			 */
-			transfers({ from = undefined, to = undefined, max = 100 } = {}) {
+			transfers({ from = undefined, to = undefined, max = 100, minBlock = undefined } = {}) {
 				return pageResults({
 					api: graphAPIEndpoints.snx,
 					max,
@@ -418,6 +419,7 @@
 								source: '\\"SNX\\"',
 								from: from ? `\\"${from}\\"` : undefined,
 								to: to ? `\\"${to}\\"` : undefined,
+								block_gte: minBlock || undefined,
 							},
 						},
 						properties: ['id', 'to', 'from', 'value', 'block', 'timestamp'],
