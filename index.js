@@ -396,6 +396,24 @@
 					.then(results => results.map(({ id }) => id))
 					.catch(err => console.error(err));
 			},
+
+			rewards({ max = 100 } = {}) {
+				return pageResults({
+					api: graphAPIEndpoints.snx,
+					max,
+					query: {
+						entity: 'rewardEscrowHolders',
+						properties: ['id', 'balanceOf'],
+					},
+				})
+					.then(results =>
+						results.map(({ id, balanceOf }) => ({
+							address: id,
+							balance: balanceOf / 1e18,
+						})),
+					)
+					.catch(err => console.error(err));
+			},
 			/**
 			 * Get the exchange totals for the given network.
 			 */

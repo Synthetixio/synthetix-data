@@ -16,8 +16,9 @@ This is a collection of utilities to query Synthetix data from Ethereum. This da
 6. `synths.transfers` Get synth transfers in reverse chronological order
 7. `rate.updates` Get all rate updates for synths in reverse chronological order
 8. `snx.total` Get the total count of unique `issuers` and `snxHolders`
-9. `snx.holders` Get the list of wallets that have ever sent or received `SNX`.
-10. `snx.transfers` Get SNX transfers in reverse chronological order
+9. `snx.rewards` Get the list of reward escrow holders and their latest balance at vesting entry add or vest.
+10. `snx.holders` Get the list of wallets that have ever sent or received `SNX`.
+11. `snx.transfers` Get SNX transfers in reverse chronological order
 
 ## How to query via the npm library (CLE)
 
