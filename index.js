@@ -59,7 +59,8 @@
 
 			const body = `{"query":"{${entity}(${propToString(selectionObj)}){${properties.join(',')}}}", "variables": null}`;
 
-			if (process.env.DEBUG === 'true') {
+			// support query logging in nodejs
+			if (process && process.env && process.env.DEBUG === 'true') {
 				console.log(body);
 			}
 
