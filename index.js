@@ -392,10 +392,19 @@
 					max,
 					query: {
 						entity: 'snxholders',
-						properties: ['id'],
+						selection: {
+							orderBy: 'collateral',
+							orderDirection: 'desc',
+						},
+						properties: ['id', 'collateral'],
 					},
 				})
-					.then(results => results.map(({ id }) => id))
+					.then(results =>
+						results.map(({ id, collateral }) => ({
+							address: id,
+							collateral: collateral ? collateral / 1e18 : null,
+						})),
+					)
 					.catch(err => console.error(err));
 			},
 

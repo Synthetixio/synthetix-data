@@ -64,9 +64,14 @@ program
 
 program
 	.command('snx.holders')
+	.option('-a, --addresses-only', 'Show addresses only')
 	.option('-m, --max <value>', 'Maximum number of results', 100)
-	.action(async ({ max }) => {
-		snx.holders({ max }).then(console.log);
+	.option('-j, --json', 'Whether or not to display the results as JSON')
+	.action(async ({ max, addressesOnly, json }) => {
+		snx
+			.holders({ max, addressesOnly })
+			.then(results => (addressesOnly ? results.map(({ address }) => address) : results))
+			.then(results => console.log(json ? JSON.stringify(results, null, 2) : results));
 	});
 
 program.command('snx.total').action(async () => {
