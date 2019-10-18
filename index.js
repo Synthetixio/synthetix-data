@@ -59,9 +59,13 @@
 
 			const body = `{"query":"{${entity}(${propToString(selectionObj)}){${properties.join(',')}}}", "variables": null}`;
 
-			// support query logging in nodejs
-			if (process && process.env && process.env.DEBUG === 'true') {
-				console.log(body);
+			try {
+				// support query logging in nodejs
+				if (process.env.DEBUG === 'true') {
+					console.log(body);
+				}
+			} catch (err) {
+				// In the browser, so do nothing
 			}
 
 			return fetch(api, {
