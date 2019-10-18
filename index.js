@@ -213,6 +213,7 @@
 				timestampInSecs = undefined,
 				minBlock = undefined,
 				maxBlock = undefined,
+				fromAddress = undefined,
 			} = {}) {
 				return pageResults({
 					api: graphAPIEndpoints.exchanges,
@@ -227,6 +228,7 @@
 								timestamp_gt: timestampInSecs || undefined,
 								block_gte: minBlock || undefined,
 								block_lte: maxBlock || undefined,
+								from: fromAddress ? `\\"${fromAddress}\\"` : undefined,
 							},
 						},
 						properties: [

@@ -34,8 +34,9 @@ program
 	)
 	.option('-b, --minBlock <value>', 'The smallest block to include, if any')
 	.option('-m, --max <value>', 'Maximum number of results')
-	.action(async ({ timestampInSecs, minBlock, max }) => {
-		exchanges.since({ timestampInSecs, minBlock, max }).then(console.log);
+	.option('-f, --fromAddress <value>', 'A from address')
+	.action(async ({ timestampInSecs, minBlock, max, fromAddress }) => {
+		exchanges.since({ timestampInSecs, minBlock, max, fromAddress }).then(console.log);
 	});
 
 program.command('synths.issuers').action(async () => {
