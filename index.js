@@ -356,7 +356,9 @@ module.exports = {
 						orderDirection: 'desc',
 						where: {
 							synth: synth ? `\\"${synth}\\"` : undefined,
-							synth_not_in: '[' + ['SNX', 'ETH', 'XDR'].map(code => `\\"${code}\\"`).join(',') + ']', // ignore non-synth prices
+							synth_not_in: !synth
+								? '[' + ['SNX', 'ETH', 'XDR'].map(code => `\\"${code}\\"`).join(',') + ']'
+								: undefined, // ignore non-synth prices
 							block_gte: minBlock || undefined,
 							block_lte: maxBlock || undefined,
 						},
