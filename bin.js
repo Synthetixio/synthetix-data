@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const program = require('commander');
+const stringify = require('csv-stringify');
 const { exchanges, depot, synths, rate, snx } = require('.');
 
 program
@@ -35,8 +36,47 @@ program
 	.option('-b, --minBlock <value>', 'The smallest block to include, if any')
 	.option('-m, --max <value>', 'Maximum number of results')
 	.option('-f, --fromAddress <value>', 'A from address')
-	.action(async ({ timestampInSecs, minBlock, max, fromAddress }) => {
-		exchanges.since({ timestampInSecs, minBlock, max, fromAddress }).then(console.log);
+	.option('-j, --json', 'Whether or not to display the results as JSON')
+	.option('-c, --csv', 'Whether or not to display the results as a CSV')
+	.action(async ({ timestampInSecs, minBlock, max, fromAddress, json, csv }) => {
+		const results = await exchanges.since({ timestampInSecs, minBlock, max, fromAddress });
+
+		if (json) {
+			console.log(JSON.stringify(results, null, 2));
+		} else if (csv) {
+			const formatted = results.map(
+				({
+					gasPrice,
+					block,
+					date,
+					hash,
+					fromCurrencyKey,
+					fromAddress,
+					fromAmountInUSD,
+					toAmount,
+					toAmountInUSD,
+					toCurrencyKey,
+					toAddress,
+					feesInUSD,
+				}) => ({
+					block,
+					date: new Date(date).toString(),
+					hash,
+					fromCurrencyKey,
+					fromAddress,
+					fromAmountInUSD,
+					toAmount,
+					toAmountInUSD,
+					toCurrencyKey,
+					toAddress,
+					feesInUSD,
+					gasPrice,
+				}),
+			);
+			stringify(formatted, { header: true }).pipe(process.stdout);
+		} else {
+			console.log(results);
+		}
 	});
 
 program.command('synths.issuers').action(async () => {

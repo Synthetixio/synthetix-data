@@ -46,13 +46,9 @@ const pageResults = ({ api, query: { entity, selection = {}, properties = [] }, 
 
 		const body = `{"query":"{${entity}(${propToString(selectionObj)}){${properties.join(',')}}}", "variables": null}`;
 
-		try {
-			// support query logging in nodejs
-			if (process.env.DEBUG === 'true') {
-				console.log(body);
-			}
-		} catch (err) {
-			// In the browser, so do nothing
+		// support query logging in nodejs
+		if (typeof process === 'object' && process.env.DEBUG === 'true') {
+			console.log(body);
 		}
 
 		return fetch(api, {

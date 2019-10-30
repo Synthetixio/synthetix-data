@@ -15,6 +15,7 @@
 	},
 	"dependencies": {
 		"commander": "2.20.0",
+		"csv-stringify": "5.3.3",
 		"node-fetch": "2.6.0"
 	},
 	"devDependencies": {
