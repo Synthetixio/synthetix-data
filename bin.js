@@ -140,4 +140,11 @@ program
 			.then(results => console.log(json ? JSON.stringify(results, null, 2) : results));
 	});
 
+program.command('exchanges.observe').action(async () => {
+	exchanges.observe().subscribe({
+		next(val) {
+			console.log(val);
+		},
+	});
+});
 program.parse(process.argv);

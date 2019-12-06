@@ -8,33 +8,46 @@ This is a collection of utilities to query Synthetix data from Ethereum. This da
 
 ## Supported queries
 
+The below all return a Promise that resolves with the requested results.
+
 1. `exchanges.since({ timestampInSecs = 1 day ago })` Get the last `N` exchanges since the given timestampInSecs (in seconds, so one hour ago is `3600`). These are ordered in reverse chronological order.
 2. `exchanges.total()` Get the total exchange volume, total fees and total number of unique exchange addresses.
-3. `depot.userActions({ user })` Get all depot deposit (`sUSD`) actions for the given user - `deposit`, `withdrawl`, `unaccepted`, `removed`.
-4. `depot.clearedDeposits({ fromAddress, toAddress })` Get all cleared synth deposits (payments of `ETH` for `sUSD`) either from a given `fromAddress` or (and as well as) to a given `toAddress`
-5. `synths.issuers` Get all wallets that have invoked `Issue` on `sUSD` (other synths to come)
-6. `synths.transfers` Get synth transfers in reverse chronological order
-7. `rate.updates` Get all rate updates for synths in reverse chronological order
-8. `snx.total` Get the total count of unique `issuers` and `snxHolders`
-9. `snx.rewards` Get the list of reward escrow holders and their latest balance at vesting entry add or vest.
-10. `snx.holders` Get the list of wallets that have ever sent or received `SNX`.
-11. `snx.transfers` Get SNX transfers in reverse chronological order
+4. `depot.userActions({ user })` Get all depot deposit (`sUSD`) actions for the given user - `deposit`, `withdrawl`, `unaccepted`, `removed`.
+5. `depot.clearedDeposits({ fromAddress, toAddress })` Get all cleared synth deposits (payments of `ETH` for `sUSD`) either from a given `fromAddress` or (and as well as) to a given `toAddress`
+6. `synths.issuers` Get all wallets that have invoked `Issue` on `sUSD` (other synths to come)
+7. `synths.transfers` Get synth transfers in reverse chronological order
+8. `rate.updates` Get all rate updates for synths in reverse chronological order
+9. `snx.total` Get the total count of unique `issuers` and `snxHolders`
+10. `snx.rewards` Get the list of reward escrow holders and their latest balance at vesting entry add or vest.
+11. `snx.holders` Get the list of wallets that have ever sent or received `SNX`.
+12. `snx.transfers` Get SNX transfers in reverse chronological order
 
-## How to query via the npm library (CLE)
+## Supported subscriptions
 
-```bash
-# get last 24 hours of exchange activity, ordered from latest to earliest
-npx synthetix-data exchanges.since
-```
+The below all return an [Observable](https://github.com/tc39/proposal-observable) that when subscribed to with an object.
 
-### Use as a node or webpack dependency
+1. `exchanges.observe()` Get an observable to `subscribe` to that will `next` the latest exchanges in real time (replays the most recent exchange immediately).
+
+## Use this as a node or webpack dependency
 
 ```javascript
 const snxData = require('synthetix-data'); // common js
 // or
 import snxData from 'synthetix-data'; // es modules
 
+// query and log resolved results
 snxData.exchanges.since().then(exchanges => console.log(exchanges));
+
+// subscribe and log streaming results
+snxData.exchanges.observe().subscribe({
+	next(val) {
+		console.log(val);
+	},
+	error: console.error,
+	complete() {
+		console.log('done');
+	},
+});
 ```
 
 ### Use in a browser
@@ -43,5 +56,18 @@ snxData.exchanges.since().then(exchanges => console.log(exchanges));
 <script src="//cdn.jsdelivr.net/npm/synthetix-data/index.min.js"></script>
 <script>
 	window.snxData.exchanges.since().then(console.log);
+
+	window.snxData.exchanges.observe().subscribe({ next: console.log });
 </script>
+```
+
+
+## How to query via the npm library (CLE)
+
+```bash
+# get last 24 hours of exchange activity, ordered from latest to earliest
+npx synthetix-data exchanges.since
+
+# get exchanges on synthetix as they occur in real time (replays the last exchange first)
+npx synthetix-data exchanges.subscribe
 ```

@@ -2,11 +2,18 @@
 
 const fetch = require('node-fetch');
 
+const ws = require('ws');
+const { SubscriptionClient } = require('subscriptions-transport-ws');
+
 const graphAPIEndpoints = {
 	snx: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix',
 	depot: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-depot',
 	exchanges: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-exchanges',
 	rates: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-rates',
+};
+
+const graphWSEndpoints = {
+	exchanges: 'wss://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-exchanges',
 };
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -168,6 +175,55 @@ module.exports = {
 		},
 	},
 	exchanges: {
+		_properties: [
+			'id',
+			'from',
+			'gasPrice',
+			'from',
+			'fromAmount',
+			'fromAmountInUSD',
+			'fromCurrencyKey',
+			'toCurrencyKey',
+			'toAddress',
+			'toAmount',
+			'toAmountInUSD',
+			'feesInUSD',
+			'block',
+			'timestamp',
+		],
+		_mapSynthExchange: ({
+			gasPrice,
+			timestamp,
+			id,
+			from,
+			fromAmount,
+			block,
+			fromAmountInUSD,
+			fromCurrencyKey,
+			toAddress,
+			toAmount,
+			toAmountInUSD,
+			toCurrencyKey,
+			feesInUSD,
+		}) => ({
+			gasPrice: gasPrice / 1e9,
+			block: Number(block),
+			timestamp: Number(timestamp * 1000),
+			date: new Date(timestamp * 1000),
+			hash: id.split('-')[0],
+			fromAddress: from,
+			fromAmount: fromAmount / 1e18, // shorthand way to convert wei into eth
+			fromCurrencyKeyBytes: fromCurrencyKey,
+			fromCurrencyKey: hexToAscii(fromCurrencyKey),
+			fromAmountInUSD: fromAmountInUSD / 1e18,
+			toAmount: toAmount / 1e18,
+			toAmountInUSD: toAmountInUSD / 1e18,
+			toCurrencyKeyBytes: toCurrencyKey,
+			toCurrencyKey: hexToAscii(toCurrencyKey),
+			toAddress,
+			feesInUSD: feesInUSD / 1e18,
+		}),
+
 		/**
 		 * Get the exchange totals for the given network.
 		 */
@@ -219,61 +275,39 @@ module.exports = {
 							from: fromAddress ? `\\"${fromAddress}\\"` : undefined,
 						},
 					},
-					properties: [
-						'id',
-						'from',
-						'gasPrice',
-						'from',
-						'fromAmount',
-						'fromAmountInUSD',
-						'fromCurrencyKey',
-						'toCurrencyKey',
-						'toAddress',
-						'toAmount',
-						'toAmountInUSD',
-						'feesInUSD',
-						'block',
-						'timestamp',
-					],
+					properties: module.exports.exchanges._properties,
 				},
 			})
-				.then(results =>
-					results.map(
-						({
-							gasPrice,
-							timestamp,
-							id,
-							from,
-							fromAmount,
-							block,
-							fromAmountInUSD,
-							fromCurrencyKey,
-							toAddress,
-							toAmount,
-							toAmountInUSD,
-							toCurrencyKey,
-							feesInUSD,
-						}) => ({
-							gasPrice: gasPrice / 1e9,
-							block: Number(block),
-							timestamp: Number(timestamp * 1000),
-							date: new Date(timestamp * 1000),
-							hash: id.split('-')[0],
-							fromAddress: from,
-							fromAmount: fromAmount / 1e18, // shorthand way to convert wei into eth
-							fromCurrencyKeyBytes: fromCurrencyKey,
-							fromCurrencyKey: hexToAscii(fromCurrencyKey),
-							fromAmountInUSD: fromAmountInUSD / 1e18,
-							toAmount: toAmount / 1e18,
-							toAmountInUSD: toAmountInUSD / 1e18,
-							toCurrencyKeyBytes: toCurrencyKey,
-							toCurrencyKey: hexToAscii(toCurrencyKey),
-							toAddress,
-							feesInUSD: feesInUSD / 1e18,
-						}),
-					),
-				)
+				.then(results => results.map(module.exports.exchanges._mapSynthExchange))
 				.catch(err => console.error(err));
+		},
+		observe() {
+			const client = new SubscriptionClient(
+				graphWSEndpoints.exchanges,
+				{
+					reconnect: true,
+				},
+				ws,
+			);
+
+			const observable = client.request({
+				query: `subscription { synthExchanges(first: 1, orderBy: timestamp, orderDirection: desc) { ${module.exports.exchanges._properties.join(
+					',',
+				)}  } }`,
+			});
+
+			return {
+				// return an observable object that transforms the results before yielding them
+				subscribe({ next, error, complete }) {
+					return observable.subscribe({
+						next({ data: { synthExchanges } }) {
+							synthExchanges.map(module.exports.exchanges._mapSynthExchange).forEach(next);
+						},
+						error,
+						complete,
+					});
+				},
+			};
 		},
 	},
 	synths: {

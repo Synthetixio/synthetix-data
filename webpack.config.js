@@ -4,6 +4,7 @@ module.exports = {
 	entry: './index.js',
 	externals: {
 		'node-fetch': 'fetch',
+		ws: 'WebSocket',
 	},
 	output: {
 		filename: 'index.min.js',

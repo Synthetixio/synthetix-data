@@ -23,9 +23,5 @@ module.exports = {
 		'prefer-const': 2,
 		semi: ['error', 'always'],
 		'no-console': 0,
-		'@typescript-eslint/explicit-member-accessibility': 0,
-		'@typescript-eslint/camelcase': 0,
-		'@typescript-eslint/class-name-casing': 0,
-		'@typescript-eslint/no-var-requires': 0,
 	},
 };
