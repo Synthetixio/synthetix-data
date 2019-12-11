@@ -4,7 +4,7 @@
 	"version": "1.4.1",
 	"author": "Synthetix",
 	"main": "index.js",
-	"browser": "index.min.js",
+	"browser": "browser.js",
 	"bin": {
 		"snxData": "bin.js"
 	},
