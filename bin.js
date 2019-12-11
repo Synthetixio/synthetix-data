@@ -98,8 +98,9 @@ program
 	.option('-m, --max <value>', 'Maximum number of results', 10)
 	.option('-b, --minBlock <value>', 'The smallest block to include, if any')
 	.option('-s, --synth <value>', 'Synth code')
-	.action(async ({ max, synth, minBlock }) => {
-		rate.updates({ max, synth, minBlock }).then(console.log);
+	.option('-t, --minTimestamp <value>', 'The oldest timestamp to include')
+	.action(async ({ max, synth, minBlock, minTimestamp }) => {
+		rate.updates({ max, synth, minBlock, minTimestamp }).then(console.log);
 	});
 
 program
