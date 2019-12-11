@@ -375,7 +375,14 @@ module.exports = {
 		/**
 		 * Get the last max RateUpdate events for the given synth in reverse order
 		 */
-		updates({ synth, minBlock = undefined, maxBlock = undefined, max = 100 } = {}) {
+		updates({
+			synth,
+			minBlock = undefined,
+			maxBlock = undefined,
+			minTimestamp = undefined,
+			maxTimestamp = undefined,
+			max = 100,
+		} = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.rates,
 				max,
@@ -391,6 +398,8 @@ module.exports = {
 								: undefined, // ignore non-synth prices
 							block_gte: minBlock || undefined,
 							block_lte: maxBlock || undefined,
+							timestamp_gte: minTimestamp || undefined,
+							timestamp_lte: maxTimestamp || undefined,
 						},
 					},
 					properties: ['id', 'synth', 'rate', 'block', 'timestamp'],

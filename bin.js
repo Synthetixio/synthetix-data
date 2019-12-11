@@ -97,9 +97,12 @@ program
 	.command('rate.updates')
 	.option('-m, --max <value>', 'Maximum number of results', 10)
 	.option('-b, --minBlock <value>', 'The smallest block to include, if any')
+	.option('-B, --maxBlock <value>', 'The biggest block to include, if any')
 	.option('-s, --synth <value>', 'Synth code')
-	.action(async ({ max, synth, minBlock }) => {
-		rate.updates({ max, synth, minBlock }).then(console.log);
+	.option('-t, --minTimestamp <value>', 'The oldest timestamp to include, if any')
+	.option('-T, --maxTimestamp <value>', 'The youngest timestamp to include, if any')
+	.action(async ({ max, synth, minBlock, maxBlock, minTimestamp, maxTimestamp }) => {
+		rate.updates({ max, synth, minBlock, maxBlock, minTimestamp, maxTimestamp }).then(console.log);
 	});
 
 program
