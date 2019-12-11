@@ -61,7 +61,7 @@ snxData.exchanges.observe().subscribe({
 </script>
 ```
 
-## How to query via the npm library (CLE)
+## How to query via the npm library (CLI)
 
 ```bash
 # get last 24 hours of exchange activity, ordered from latest to earliest
