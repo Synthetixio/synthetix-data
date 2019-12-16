@@ -44,35 +44,13 @@ program
 		if (json) {
 			console.log(JSON.stringify(results, null, 2));
 		} else if (csv) {
-			const formatted = results.map(
-				({
-					gasPrice,
-					block,
-					date,
-					hash,
-					fromCurrencyKey,
-					fromAddress,
-					fromAmountInUSD,
-					toAmount,
-					toAmountInUSD,
-					toCurrencyKey,
-					toAddress,
-					feesInUSD,
-				}) => ({
-					block,
-					date: new Date(date).toString(),
-					hash,
-					fromCurrencyKey,
-					fromAddress,
-					fromAmountInUSD,
-					toAmount,
-					toAmountInUSD,
-					toCurrencyKey,
-					toAddress,
-					feesInUSD,
-					gasPrice,
-				}),
-			);
+			const formatted = results.map(result => {
+				return Object.assign({}, result, {
+					date: new Date(result.date).toString(),
+					fromCurrencyKeyBytes: undefined,
+					toCurrencyKeyBytes: undefined,
+				});
+			});
 			stringify(formatted, { header: true }).pipe(process.stdout);
 		} else {
 			console.log(results);
