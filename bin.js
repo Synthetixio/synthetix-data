@@ -2,6 +2,8 @@
 
 const program = require('commander');
 const stringify = require('csv-stringify');
+const moment = require('moment');
+
 const { exchanges, depot, synths, rate, snx } = require('.');
 
 program
@@ -54,6 +56,58 @@ program
 			stringify(formatted, { header: true }).pipe(process.stdout);
 		} else {
 			console.log(results);
+		}
+	});
+
+program
+	.command('exchanges.grouped')
+	.option('-t, --type <value>', 'The type of unit - months, weeks or days', 'days')
+	.option('-n, --unit <value>', 'The number of units (months, weeks, days) back to include prior to the current', 0)
+	.option('-j, --json', 'Whether or not to display the results as JSON')
+	.option('-c, --csv', 'Whether or not to display the results as a CSV')
+	.action(async ({ type, unit, json, csv }) => {
+		const typeToLabelFormatMap = {
+			months: ts => moment(ts).format('MMM YY'),
+			weeks: ts => 'Week ' + moment(ts).format('ww, YY'),
+			days: ts => moment(ts).format('DD MMM YY'),
+		};
+		const typeWithoutPlural = type.slice(0, type.length - 1);
+		// get entries from beyond a certain point
+		const timestampInSecs = moment()
+			.startOf(typeWithoutPlural)
+			.subtract(unit, type)
+			.unix();
+
+		// results are reverse chronologically ordered
+		const results = await exchanges.since({ timestampInSecs });
+		const groups = [];
+		const _cache = {};
+		const lastMomentInWindow = moment(results[0].timestamp).endOf(typeWithoutPlural);
+
+		for (const { timestamp, fromAmountInUSD, feesInUSD, fromAddress } of results) {
+			const i = Math.abs(moment(timestamp).diff(lastMomentInWindow, type));
+			// initialize the grouping
+			groups[i] = groups[i] || {
+				volume: 0,
+				fees: 0,
+				unique: 0,
+				label: typeToLabelFormatMap[type](timestamp),
+			};
+			_cache[i] = _cache[i] || {};
+
+			groups[i].volume = Math.round(fromAmountInUSD + groups[i].volume);
+			groups[i].fees = Math.round(feesInUSD + groups[i].fees);
+			groups[i].unique += !_cache[i][fromAddress] ? 1 : 0;
+
+			_cache[i][fromAddress] = true; // track this address
+		}
+
+		if (json) {
+			console.log(JSON.stringify(groups, null, 2));
+		} else if (csv) {
+			stringify(groups, { header: true }).pipe(process.stdout);
+		} else {
+			console.log(groups);
 		}
 	});
 
