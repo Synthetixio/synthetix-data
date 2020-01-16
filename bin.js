@@ -91,6 +91,7 @@ program
 				volume: 0,
 				fees: 0,
 				unique: 0,
+				trades: 0,
 				label: typeToLabelFormatMap[type](timestamp),
 			};
 			_cache[i] = _cache[i] || {};
@@ -98,6 +99,7 @@ program
 			groups[i].volume = Math.round(fromAmountInUSD + groups[i].volume);
 			groups[i].fees = Math.round(feesInUSD + groups[i].fees);
 			groups[i].unique += !_cache[i][fromAddress] ? 1 : 0;
+			groups[i].trades++;
 
 			_cache[i][fromAddress] = true; // track this address
 		}
