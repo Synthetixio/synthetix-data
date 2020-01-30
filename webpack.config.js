@@ -14,7 +14,4 @@ module.exports = {
 		library: 'snxData',
 		libraryTarget: 'umd',
 	},
-	optimization: {
-		minimize: false,
-	},
 };

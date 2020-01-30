@@ -1,1 +1,2 @@
-*.min.js
+browser.js
+ws-shim.js

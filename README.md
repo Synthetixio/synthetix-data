@@ -36,7 +36,11 @@ const snxData = require('synthetix-data'); // common js
 import snxData from 'synthetix-data'; // es modules
 
 // query and log resolved results
-snxData.exchanges.since().then(exchanges => console.log(exchanges));
+snxData.exchanges
+	.since({
+		timestampInSecs: Math.floor(Date.now() / 1e3) - 3600 * 24, // one day ago
+	})
+	.then(exchanges => console.log(exchanges));
 
 // subscribe and log streaming results
 snxData.exchanges.observe().subscribe({
@@ -55,7 +59,11 @@ snxData.exchanges.observe().subscribe({
 ```html
 <script src="//cdn.jsdelivr.net/npm/synthetix-data/browser.js"></script>
 <script>
-	window.snxData.exchanges.since().then(console.log);
+	window.snxData.exchanges
+		.since({
+			timestampInSecs: Math.floor(Date.now() / 1e3) - 3600 * 24, // one day ago
+		})
+		.then(console.log);
 
 	window.snxData.exchanges.observe().subscribe({ next: console.log });
 </script>
