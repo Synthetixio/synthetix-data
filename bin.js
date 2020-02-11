@@ -184,4 +184,12 @@ program.command('exchanges.observe').action(async () => {
 		},
 	});
 });
+
+program.command('rate.observe').action(async () => {
+	rate.observe().subscribe({
+		next(val) {
+			console.log(val);
+		},
+	});
+});
 program.parse(process.argv);

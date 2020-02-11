@@ -14,6 +14,7 @@ const graphAPIEndpoints = {
 
 const graphWSEndpoints = {
 	exchanges: 'wss://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-exchanges',
+	rates: 'wss://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-rates',
 };
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -351,6 +352,38 @@ module.exports = {
 					})),
 				)
 				.catch(err => console.error(err));
+		},
+		observe() {
+			const client = new SubscriptionClient(
+				graphWSEndpoints.rates,
+				{
+					reconnect: true,
+				},
+				ws,
+			);
+
+			const observable = client.request({
+				query: `subscription { rateUpdates(first: 1, orderBy: timestamp, orderDirection: desc) { ${[
+					'id',
+					'synth',
+					'rate',
+					'block',
+					'timestamp',
+				].join(',')}  } }`,
+			});
+
+			return {
+				// return an observable object that transforms the results before yielding them
+				subscribe({ next, error, complete }) {
+					return observable.subscribe({
+						next({ data: { rateUpdates } }) {
+							rateUpdates.forEach(next);
+						},
+						error,
+						complete,
+					});
+				},
+			};
 		},
 	},
 	snx: {
