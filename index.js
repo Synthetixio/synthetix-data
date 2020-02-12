@@ -353,7 +353,7 @@ module.exports = {
 				)
 				.catch(err => console.error(err));
 		},
-		observe() {
+		observe({ minTimestamp = Math.round(Date.now() / 1000) } = {}) {
 			const client = new SubscriptionClient(
 				graphWSEndpoints.rates,
 				{
@@ -362,8 +362,9 @@ module.exports = {
 				ws,
 			);
 
+			// Note: we can't use "first" here as some updates come together (the SNX oracle groups together some rates)
 			const observable = client.request({
-				query: `subscription { rateUpdates(first: 1, orderBy: timestamp, orderDirection: desc) { ${[
+				query: `subscription { rateUpdates(where: { timestamp_gt: ${minTimestamp}}, orderBy: timestamp, orderDirection: desc) { ${[
 					'id',
 					'synth',
 					'rate',
