@@ -10,7 +10,7 @@ This is a collection of utilities to query Synthetix data from Ethereum. This da
 
 The below all return a Promise that resolves with the requested results.
 
-1. `exchanges.since({ timestampInSecs = 1 day ago })` Get the last `N` exchanges since the given timestampInSecs (in seconds, so one hour ago is `3600`). These are ordered in reverse chronological order.
+1. `exchanges.since({ minTimestamp = 1 day ago })` Get the last `N` exchanges since the given `minTimestamp` (in seconds, so one hour ago is `3600`). These are ordered in reverse chronological order.
 2. `exchanges.total()` Get the total exchange volume, total fees and total number of unique exchange addresses.
 3. `depot.userActions({ user })` Get all depot deposit (`sUSD`) actions for the given user - `deposit`, `withdrawl`, `unaccepted`, `removed`.
 4. `depot.clearedDeposits({ fromAddress, toAddress })` Get all cleared synth deposits (payments of `ETH` for `sUSD`) either from a given `fromAddress` or (and as well as) to a given `toAddress`
@@ -38,7 +38,7 @@ import snxData from 'synthetix-data'; // es modules
 // query and log resolved results
 snxData.exchanges
 	.since({
-		timestampInSecs: Math.floor(Date.now() / 1e3) - 3600 * 24, // one day ago
+		minTimestamp: Math.floor(Date.now() / 1e3) - 3600 * 24, // one day ago
 	})
 	.then(exchanges => console.log(exchanges));
 
@@ -61,7 +61,7 @@ snxData.exchanges.observe().subscribe({
 <script>
 	window.snxData.exchanges
 		.since({
-			timestampInSecs: Math.floor(Date.now() / 1e3) - 3600 * 24, // one day ago
+			minTimestamp: Math.floor(Date.now() / 1e3) - 3600 * 24, // one day ago
 		})
 		.then(console.log);
 

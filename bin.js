@@ -30,7 +30,7 @@ program.command('exchanges.total').action(async () => {
 program
 	.command('exchanges.since')
 	.option(
-		'-t, --timestampInSecs <value>',
+		'-t, --min-timestamp <value>',
 		'Timestamp',
 		parseInt,
 		Math.floor(Date.now() / 1e3) - 3600 * 24, //default is 1 day ago
@@ -40,8 +40,8 @@ program
 	.option('-f, --fromAddress <value>', 'A from address')
 	.option('-j, --json', 'Whether or not to display the results as JSON')
 	.option('-c, --csv', 'Whether or not to display the results as a CSV')
-	.action(async ({ timestampInSecs, minBlock, max, fromAddress, json, csv }) => {
-		const results = await exchanges.since({ timestampInSecs, minBlock, max, fromAddress });
+	.action(async ({ minTimestamp, minBlock, max, fromAddress, json, csv }) => {
+		const results = await exchanges.since({ minTimestamp, minBlock, max, fromAddress });
 
 		if (json) {
 			console.log(JSON.stringify(results, null, 2));
@@ -73,13 +73,13 @@ program
 		};
 		const typeWithoutPlural = type.slice(0, type.length - 1);
 		// get entries from beyond a certain point
-		const timestampInSecs = moment()
+		const minTimestamp = moment()
 			.startOf(typeWithoutPlural)
 			.subtract(unit, type)
 			.unix();
 
 		// results are reverse chronologically ordered
-		const results = await exchanges.since({ timestampInSecs });
+		const results = await exchanges.since({ minTimestamp });
 		const groups = [];
 		const _cache = {};
 		const lastMomentInWindow = moment(results[0].timestamp).endOf(typeWithoutPlural);

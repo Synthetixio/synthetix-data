@@ -190,7 +190,8 @@ module.exports = {
 		since({
 			network = 'mainnet',
 			max = Infinity,
-			timestampInSecs = undefined,
+			minTimestamp = undefined,
+			maxTimestamp = undefined,
 			minBlock = undefined,
 			maxBlock = undefined,
 			fromAddress = undefined,
@@ -205,7 +206,8 @@ module.exports = {
 						orderDirection: 'desc',
 						where: {
 							network: `\\"${network}\\"`,
-							timestamp_gt: timestampInSecs || undefined,
+							timestamp_gte: minTimestamp || undefined,
+							timestamp_lte: maxTimestamp || undefined,
 							block_gte: minBlock || undefined,
 							block_lte: maxBlock || undefined,
 							from: fromAddress ? `\\"${fromAddress}\\"` : undefined,
