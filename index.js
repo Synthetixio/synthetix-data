@@ -418,6 +418,10 @@ module.exports = {
 				max,
 				query: {
 					entity: 'rewardEscrowHolders',
+					selection: {
+						orderBy: 'balanceOf',
+						orderDirection: 'desc',
+					},
 					properties: ['id', 'balanceOf'],
 				},
 			})
