@@ -219,6 +219,60 @@ module.exports = {
 				.then(results => results.map(module.exports.exchanges._mapSynthExchange))
 				.catch(err => console.error(err));
 		},
+
+		_rebateOrReclaim({ isReclaim }) {
+			return ({
+				account = undefined,
+				max = Infinity,
+				minTimestamp = undefined,
+				maxTimestamp = undefined,
+				minBlock = undefined,
+				maxBlock = undefined,
+			} = {}) => {
+				return pageResults({
+					api: graphAPIEndpoints.exchanges,
+					max,
+					query: {
+						entity: `exchange${isReclaim ? 'Reclaim' : 'Rebate'}s`,
+						selection: {
+							orderBy: 'timestamp',
+							orderDirection: 'desc',
+							where: {
+								timestamp_gte: minTimestamp || undefined,
+								timestamp_lte: maxTimestamp || undefined,
+								block_gte: minBlock || undefined,
+								block_lte: maxBlock || undefined,
+								account: account ? `\\"${account}\\"` : undefined,
+							},
+						},
+						properties: ['id', 'amount', 'currencyKey', 'account', 'timestamp', 'block', 'gasPrice'],
+					},
+				})
+					.then(results =>
+						results.map(({ gasPrice, timestamp, id, account, block, currencyKey, amount }) => ({
+							gasPrice: gasPrice / 1e9,
+							block: Number(block),
+							timestamp: Number(timestamp * 1000),
+							date: new Date(timestamp * 1000),
+							hash: id.split('-')[0],
+							account,
+							amount: amount / 1e18, // shorthand way to convert wei into eth
+							currencyKey: hexToAscii(currencyKey),
+							currencyKeyBytes: currencyKey,
+						})),
+					)
+					.catch(err => console.error(err));
+			};
+		},
+
+		reclaims(args) {
+			return this._rebateOrReclaim({ isReclaim: true })(args);
+		},
+
+		rebates(args) {
+			return this._rebateOrReclaim({ isReclaim: false })(args);
+		},
+
 		observe() {
 			const client = new SubscriptionClient(
 				graphWSEndpoints.exchanges,

@@ -60,6 +60,50 @@ program
 	});
 
 program
+	.command('exchanges.reclaims')
+	.option(
+		'-t, --min-timestamp <value>',
+		'Timestamp',
+		parseInt,
+		Math.floor(Date.now() / 1e3) - 3600 * 24, //default is 1 day ago
+	)
+	.option('-b, --minBlock <value>', 'The smallest block to include, if any')
+	.option('-m, --max <value>', 'Maximum number of results')
+	.option('-a, --account <value>', 'An address')
+	.option('-j, --json', 'Whether or not to display the results as JSON')
+	.action(async ({ minTimestamp, minBlock, max, account, json }) => {
+		const results = await exchanges.reclaims({ minTimestamp, minBlock, max, account });
+
+		if (json) {
+			console.log(JSON.stringify(results, null, 2));
+		} else {
+			console.log(results);
+		}
+	});
+
+program
+	.command('exchanges.rebates')
+	.option(
+		'-t, --min-timestamp <value>',
+		'Timestamp',
+		parseInt,
+		Math.floor(Date.now() / 1e3) - 3600 * 24, //default is 1 day ago
+	)
+	.option('-b, --minBlock <value>', 'The smallest block to include, if any')
+	.option('-m, --max <value>', 'Maximum number of results')
+	.option('-a, --account <value>', 'An address')
+	.option('-j, --json', 'Whether or not to display the results as JSON')
+	.action(async ({ minTimestamp, minBlock, max, account, json }) => {
+		const results = await exchanges.rebates({ minTimestamp, minBlock, max, account });
+
+		if (json) {
+			console.log(JSON.stringify(results, null, 2));
+		} else {
+			console.log(results);
+		}
+	});
+
+program
 	.command('exchanges.grouped')
 	.option('-t, --type <value>', 'The type of unit - months, weeks or days', 'days')
 	.option('-n, --unit <value>', 'The number of units (months, weeks, days) back to include prior to the current', 0)
