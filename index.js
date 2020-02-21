@@ -245,18 +245,19 @@ module.exports = {
 								account: account ? `\\"${account}\\"` : undefined,
 							},
 						},
-						properties: ['id', 'amount', 'currencyKey', 'account', 'timestamp', 'block', 'gasPrice'],
+						properties: ['id', 'amount', 'amountInUSD', 'currencyKey', 'account', 'timestamp', 'block', 'gasPrice'],
 					},
 				})
 					.then(results =>
-						results.map(({ gasPrice, timestamp, id, account, block, currencyKey, amount }) => ({
+						results.map(({ gasPrice, timestamp, id, account, block, currencyKey, amount, amountInUSD }) => ({
 							gasPrice: gasPrice / 1e9,
 							block: Number(block),
 							timestamp: Number(timestamp * 1000),
 							date: new Date(timestamp * 1000),
 							hash: id.split('-')[0],
 							account,
-							amount: amount / 1e18, // shorthand way to convert wei into eth
+							amount: amount / 1e18, // shorthand way to convert wei into eth,
+							amountInUSD: amountInUSD / 1e18,
 							currencyKey: hexToAscii(currencyKey),
 							currencyKeyBytes: currencyKey,
 						})),
