@@ -16,8 +16,8 @@ program
 
 program
 	.command('depot.clearedDeposits')
-	.option('-f, --fromAddress <value>', 'A from address')
-	.option('-t, --toAddress <value>', 'A to address')
+	.option('-f, --from-address <value>', 'A from address')
+	.option('-t, --to-address <value>', 'A to address')
 	.option('-m, --max <value>', 'Maximum number of results', 10)
 	.action(async ({ fromAddress, toAddress }) => {
 		depot.clearedDeposits({ fromAddress, toAddress }).then(console.log);
@@ -32,12 +32,11 @@ program
 	.option(
 		'-t, --min-timestamp <value>',
 		'Timestamp',
-		parseInt,
 		Math.floor(Date.now() / 1e3) - 3600 * 24, //default is 1 day ago
 	)
-	.option('-b, --minBlock <value>', 'The smallest block to include, if any')
+	.option('-b, --min-block <value>', 'The smallest block to include, if any')
 	.option('-m, --max <value>', 'Maximum number of results')
-	.option('-f, --fromAddress <value>', 'A from address')
+	.option('-f, --from-address <value>', 'A from address')
 	.option('-j, --json', 'Whether or not to display the results as JSON')
 	.option('-c, --csv', 'Whether or not to display the results as a CSV')
 	.action(async ({ minTimestamp, minBlock, max, fromAddress, json, csv }) => {
@@ -65,10 +64,9 @@ const doReclaimRebates = ({ prg, isReclaim }) => {
 		.option(
 			'-t, --min-timestamp <value>',
 			'Timestamp',
-			parseInt,
 			Math.floor(Date.now() / 1e3) - 3600 * 24, //default is 1 day ago
 		)
-		.option('-b, --minBlock <value>', 'The smallest block to include, if any')
+		.option('-b, --min-block <value>', 'The smallest block to include, if any')
 		.option('-m, --max <value>', 'Maximum number of results')
 		.option('-a, --account <value>', 'An address')
 		.option('-j, --json', 'Whether or not to display the results as JSON')
@@ -164,8 +162,8 @@ program
 program
 	.command('rate.updates')
 	.option('-m, --max <value>', 'Maximum number of results', 10)
-	.option('-b, --minBlock <value>', 'The smallest block to include, if any')
-	.option('-B, --maxBlock <value>', 'The biggest block to include, if any')
+	.option('-b, --min-block <value>', 'The smallest block to include, if any')
+	.option('-B, --max-block <value>', 'The biggest block to include, if any')
 	.option('-s, --synth <value>', 'Synth code')
 	.option('-t, --minTimestamp <value>', 'The oldest timestamp to include, if any')
 	.option('-T, --maxTimestamp <value>', 'The youngest timestamp to include, if any')
