@@ -455,14 +455,41 @@ module.exports = {
 						orderBy: 'collateral',
 						orderDirection: 'desc',
 					},
-					properties: ['id', 'collateral'],
+					properties: [
+						'id', // the address of the holder
+						'block', // the block this entity was last updated in
+						'timestamp', // the timestamp when this entity was last updated
+						'collateral', // Synthetix.collateral (all collateral the account has, including escrowed )
+						'balanceOf', // SNX balance in their wallet
+						'transferable', // All non-locked SNX
+						'initialDebtOwnership', // Debt data from SynthetixState, used to calculate debtBalance
+						'debtEntryAtIndex', // Debt data from SynthetixState, used to calculate debtBalance
+					],
 				},
 			})
 				.then(results =>
-					results.map(({ id, collateral }) => ({
-						address: id,
-						collateral: collateral ? collateral / 1e18 : null,
-					})),
+					results.map(
+						({
+							id,
+							collateral,
+							block,
+							timestamp,
+							balanceOf,
+							transferable,
+							initialDebtOwnership,
+							debtEntryAtIndex,
+						}) => ({
+							address: id,
+							block: Number(block),
+							timestamp: Number(timestamp * 1000),
+							date: new Date(timestamp * 1000),
+							collateral: collateral ? collateral / 1e18 : null,
+							balanceOf: balanceOf ? balanceOf / 1e18 : null,
+							transferable: transferable ? transferable / 1e18 : null,
+							initialDebtOwnership: initialDebtOwnership ? initialDebtOwnership / 1e18 : null,
+							debtEntryAtIndex: debtEntryAtIndex ? debtEntryAtIndex / 1e18 : null,
+						}),
+					),
 				)
 				.catch(err => console.error(err));
 		},
