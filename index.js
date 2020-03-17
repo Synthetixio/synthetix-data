@@ -486,8 +486,9 @@ module.exports = {
 							collateral: collateral ? collateral / 1e18 : null,
 							balanceOf: balanceOf ? balanceOf / 1e18 : null,
 							transferable: transferable ? transferable / 1e18 : null,
-							initialDebtOwnership: initialDebtOwnership ? initialDebtOwnership / 1e18 : null,
-							debtEntryAtIndex: debtEntryAtIndex ? debtEntryAtIndex / 1e18 : null,
+							// Use 1e27 as the below entries are high precision decimals (see SafeDecimalMath.sol in @Synthetixio/synthetix)
+							initialDebtOwnership: initialDebtOwnership ? initialDebtOwnership / 1e27 : null,
+							debtEntryAtIndex: debtEntryAtIndex ? debtEntryAtIndex / 1e27 : null,
 						}),
 					),
 				)
