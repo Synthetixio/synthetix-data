@@ -445,7 +445,7 @@ module.exports = {
 		},
 	},
 	snx: {
-		holders({ max = 100 } = {}) {
+		holders({ max = 100, address = undefined } = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.snx,
 				max,
@@ -454,6 +454,9 @@ module.exports = {
 					selection: {
 						orderBy: 'collateral',
 						orderDirection: 'desc',
+						where: {
+							id: address ? `\\"${address}\\"` : undefined,
+						},
 					},
 					properties: [
 						'id', // the address of the holder

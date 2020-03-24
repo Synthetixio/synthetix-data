@@ -173,12 +173,13 @@ program
 
 program
 	.command('snx.holders')
-	.option('-a, --addresses-only', 'Show addresses only')
+	.option('-a, --address <value>', 'Address to filter on, if any')
 	.option('-m, --max <value>', 'Maximum number of results', 100)
+	.option('-o, --addresses-only', 'Show addresses only')
 	.option('-j, --json', 'Whether or not to display the results as JSON')
-	.action(async ({ max, addressesOnly, json }) => {
+	.action(async ({ max, addressesOnly, address, json }) => {
 		snx
-			.holders({ max, addressesOnly })
+			.holders({ max, address, addressesOnly })
 			.then(results => (addressesOnly ? results.map(({ address }) => address) : results))
 			.then(results => console.log(json ? JSON.stringify(results, null, 2) : results));
 	});
