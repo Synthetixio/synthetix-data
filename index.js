@@ -445,6 +445,74 @@ module.exports = {
 		},
 	},
 	snx: {
+		issued({ max = 100, account = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.snx,
+				max,
+				query: {
+					entity: 'issueds',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'desc',
+						where: {
+							account: account ? `\\"${account}\\"` : undefined,
+						},
+					},
+					properties: [
+						'id', // the transaction hash
+						'account', // the address of the burner
+						'timestamp', // the timestamp when this transaction happened
+						'block', // the block in which this transaction happened
+						'value', // the issued amount in sUSD
+					],
+				},
+			})
+				.then(results =>
+					results.map(({ id, account, timestamp, block, value }) => ({
+						hash: id,
+						account,
+						timestamp: Number(timestamp * 1000),
+						block: Number(block),
+						value: value / 1e18,
+					})),
+				)
+				.catch(err => console.error(err));
+		},
+
+		burned({ max = 100, account = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.snx,
+				max,
+				query: {
+					entity: 'burneds',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'desc',
+						where: {
+							account: account ? `\\"${account}\\"` : undefined,
+						},
+					},
+					properties: [
+						'id', // the transaction hash
+						'account', // the address of the burner
+						'timestamp', // the timestamp when this transaction happened
+						'block', // the block in which this transaction happened
+						'value', // the burned amount in sUSD
+					],
+				},
+			})
+				.then(results =>
+					results.map(({ id, account, timestamp, block, value }) => ({
+						hash: id,
+						account,
+						timestamp: Number(timestamp * 1000),
+						block: Number(block),
+						value: value / 1e18,
+					})),
+				)
+				.catch(err => console.error(err));
+		},
+
 		holders({ max = 100, address = undefined } = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.snx,

@@ -210,6 +210,24 @@ program
 			.then(results => console.log(json ? JSON.stringify(results, null, 2) : results));
 	});
 
+program
+	.command('snx.burned')
+	.option('-a, --account <value>', 'Account to filter on, if any')
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+
+	.action(async ({ max, account }) => {
+		snx.burned({ max, account }).then(console.log);
+	});
+
+program
+	.command('snx.issued')
+	.option('-a, --account <value>', 'Account to filter on, if any')
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+
+	.action(async ({ max, account }) => {
+		snx.issued({ max, account }).then(console.log);
+	});
+
 program.command('exchanges.observe').action(async () => {
 	exchanges.observe().subscribe({
 		next(val) {

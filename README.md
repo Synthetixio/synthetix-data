@@ -23,6 +23,8 @@ The below all return a Promise that resolves with the requested results.
 11. `snx.rewards` Get the list of reward escrow holders and their latest balance at vesting entry add or vest.
 12. `snx.total` Get the total count of unique `issuers` and `snxHolders`
 13. `snx.transfers` Get SNX transfers in reverse chronological order
+14. `snx.issued` Get the `Issued` events in reverse chronological order.
+15. `snx.burned` Get the `Burned` events in reverse chronological order.
 
 ## Supported subscriptions
 
