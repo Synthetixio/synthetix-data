@@ -28,14 +28,6 @@ program.command('exchanges.total').action(async () => {
 });
 
 program
-	.command('exchanges.list')
-	.option('-m, --max <value>', 'Maximum number of results')
-	.option('-f, --from-address <value>', 'A from address')
-	.action(async ({ max, fromAddress }) => {
-		exchanges.list({ max, fromAddress }).then(console.log);
-	});
-
-program
 	.command('exchanges.since')
 	.option(
 		'-t, --min-timestamp <value>',

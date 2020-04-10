@@ -220,27 +220,6 @@ module.exports = {
 				.catch(err => console.error(err));
 		},
 
-		list({ max = 100, fromAddress = undefined, network = 'mainnet' } = {}) {
-			return pageResults({
-				api: graphAPIEndpoints.exchanges,
-				max,
-				query: {
-					entity: 'synthExchanges',
-					selection: {
-						orderBy: 'timestamp',
-						orderDirection: 'desc',
-						where: {
-							network: `\\"${network}\\"`,
-							from: fromAddress ? `\\"${fromAddress}\\"` : undefined,
-						},
-					},
-					properties: module.exports.exchanges._properties,
-				},
-			})
-				.then(results => results.map(module.exports.exchanges._mapSynthExchange))
-				.catch(err => console.error(err));
-		},
-
 		_rebateOrReclaim({ isReclaim }) {
 			return ({
 				account = undefined,
