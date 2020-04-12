@@ -228,6 +228,15 @@ program
 		snx.issued({ max, account }).then(console.log);
 	});
 
+program
+	.command('snx.feesClaimed')
+	.option('-a, --account <value>', 'Account to filter on, if any')
+	.option('-m, --max <value>', 'Maximum number of results', 100)
+
+	.action(async ({ max, account }) => {
+		snx.feesClaimed({ max, account }).then(console.log);
+	});
+
 program.command('exchanges.observe').action(async () => {
 	exchanges.observe().subscribe({
 		next(val) {
