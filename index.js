@@ -671,7 +671,7 @@ module.exports = {
 			})
 				.then(results =>
 					results.map(({ id, account, timestamp, block, value, rewards }) => ({
-						hash: id,
+						hash: id.split('-')[0],
 						account,
 						timestamp: Number(timestamp * 1000),
 						block: Number(block),
