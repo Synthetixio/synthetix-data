@@ -646,5 +646,40 @@ module.exports = {
 				)
 				.catch(err => console.error(err));
 		},
+		feesClaimed({ max = 100, account = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.snx,
+				max,
+				query: {
+					entity: 'feesClaimeds',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'desc',
+						where: {
+							account: account ? `\\"${account}\\"` : undefined,
+						},
+					},
+					properties: [
+						'id', // the transaction hash
+						'account', // the address of the claimer
+						'timestamp', // the timestamp when this transaction happened
+						'block', // the block in which this transaction happened
+						'value', // the claimed amount in sUSD
+						'rewards', // the rewards amount in SNX
+					],
+				},
+			})
+				.then(results =>
+					results.map(({ id, account, timestamp, block, value, rewards }) => ({
+						hash: id,
+						account,
+						timestamp: Number(timestamp * 1000),
+						block: Number(block),
+						value: value / 1e18,
+						rewards: rewards / 1e18,
+					})),
+				)
+				.catch(err => console.error(err));
+		},
 	},
 };

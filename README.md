@@ -25,6 +25,7 @@ The below all return a Promise that resolves with the requested results.
 13. `snx.transfers` Get SNX transfers in reverse chronological order
 14. `snx.issued` Get the `Issued` events in reverse chronological order.
 15. `snx.burned` Get the `Burned` events in reverse chronological order.
+16. `snx.feesClaimed` Get the `FeesClaimed` events in reverse chronological order, showing fees in sUSD and rewards in SNX.
 
 ## Supported subscriptions
 
