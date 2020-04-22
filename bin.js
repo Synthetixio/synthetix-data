@@ -23,6 +23,14 @@ program
 		depot.clearedDeposits({ fromAddress, toAddress }).then(console.log);
 	});
 
+program
+	.command('depot.exchanges')
+	.option('-f, --from <value>', 'A from address')
+	.option('-m, --max <value>', 'Maximum number of results', 10)
+	.action(async ({ max, from }) => {
+		depot.exchanges({ max, from }).then(console.log);
+	});
+
 program.command('exchanges.total').action(async () => {
 	exchanges.total().then(console.log);
 });
