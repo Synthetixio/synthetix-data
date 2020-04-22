@@ -109,6 +109,38 @@ module.exports = {
 				)
 				.catch(err => console.error(err));
 		},
+		exchanges({ network = 'mainnet', from = undefined, max = 100 }) {
+			return pageResults({
+				api: graphAPIEndpoints.depot,
+				query: {
+					entity: 'exchanges',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'desc',
+						where: {
+							network: `\\"${network}\\"`,
+							from: from ? `\\"${from}\\"` : undefined,
+						},
+					},
+					properties: ['id', 'from', 'fromCurrency', 'fromAmount', 'toCurrency', 'toAmount', 'block', 'timestamp'],
+				},
+				max,
+			})
+				.then(results =>
+					results.map(({ id, from, fromAmount, fromCurrency, toAmount, toCurrency, block, timestamp }) => ({
+						hash: id.split('-')[0],
+						from,
+						fromAmount: fromAmount / 1e18,
+						fromCurrency,
+						toAmount: toAmount / 1e18,
+						toCurrency,
+						block: Number(block),
+						timestamp: Number(timestamp * 1000),
+						date: new Date(timestamp * 1000),
+					})),
+				)
+				.catch(err => console.error(err));
+		},
 	},
 	exchanges: {
 		_properties: [
