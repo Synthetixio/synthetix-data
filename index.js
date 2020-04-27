@@ -9,7 +9,7 @@ const graphAPIEndpoints = {
 	snx: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix',
 	depot: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-depot',
 	exchanges: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-exchanges',
-	rates: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-rates',
+	rates: 'http://graph.synth.optimism.io:8000/subgraphs/name/synthetixio-team/synthetix-rates',
 };
 
 const graphWSEndpoints = {
