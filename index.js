@@ -8,7 +8,7 @@ const pageResults = require('graph-results-pager');
 const graphAPIEndpoints = {
 	snx: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix',
 	depot: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-depot',
-	exchanges: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-exchanges',
+	exchanges: 'http://graph.synth.optimism.io:8000/subgraphs/name/synthetixio-team/synthetix-exchanges',
 	rates: 'http://graph.synth.optimism.io:8000/subgraphs/name/synthetixio-team/synthetix-rates',
 };
 
@@ -195,7 +195,7 @@ module.exports = {
 		/**
 		 * Get the exchange totals for the given network.
 		 */
-		total({ network = 'mainnet' } = {}) {
+		total({ network = 'ovm' } = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.exchanges,
 				query: {
@@ -220,7 +220,7 @@ module.exports = {
 		 * Get all exchanges since some timestamp in seconds or minimum block (ordered reverse chronological)
 		 */
 		since({
-			network = 'mainnet',
+			network = 'ovm',
 			max = Infinity,
 			minTimestamp = undefined,
 			maxTimestamp = undefined,
