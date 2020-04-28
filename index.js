@@ -8,8 +8,8 @@ const pageResults = require('graph-results-pager');
 const graphAPIEndpoints = {
 	snx: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix',
 	depot: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-depot',
-	exchanges: 'http://graph.synth.optimism.io:8000/subgraphs/name/synthetixio-team/synthetix-exchanges',
-	rates: 'http://graph.synth.optimism.io:8000/subgraphs/name/synthetixio-team/synthetix-rates',
+	exchanges: 'https://graph.synth.optimism.io/subgraphs/name/synthetixio-team/synthetix-exchanges',
+	rates: 'https://graph.synth.optimism.io/subgraphs/name/synthetixio-team/synthetix-rates',
 };
 
 const graphWSEndpoints = {
