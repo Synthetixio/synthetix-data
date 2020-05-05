@@ -62,6 +62,6 @@ typings/
 
 .DS_Store
 
-browser.js
+# browser.js
 
 *.csv
