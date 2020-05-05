@@ -13,8 +13,8 @@ const graphAPIEndpoints = {
 };
 
 const graphWSEndpoints = {
-	exchanges: 'wss://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-exchanges',
-	rates: 'wss://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-rates',
+	exchanges: 'wss://graph.synth.optimism.io/subgraphs/name/synthetixio-team/synthetix-exchanges',
+	rates: 'wss://graph.synth.optimism.io/subgraphs/name/synthetixio-team/synthetix-rates',
 };
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
