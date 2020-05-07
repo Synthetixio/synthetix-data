@@ -195,7 +195,7 @@ module.exports = {
 		/**
 		 * Get the exchange totals for the given network.
 		 */
-		total({ network = 'ovm' } = {}) {
+		total({ network = 'mainnet' } = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.exchanges,
 				query: {
