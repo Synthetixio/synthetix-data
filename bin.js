@@ -168,6 +168,20 @@ program
 	});
 
 program
+	.command('synths.holders')
+	.option('-a, --address <value>', 'Address to filter on, if any')
+	.option('-s, --synth <value>', 'The synth currencyKey')
+	.option('-m, --max <value>', 'Maximum number of results', 100)
+	.option('-o, --addresses-only', 'Show addresses only')
+	.option('-j, --json', 'Whether or not to display the results as JSON')
+	.action(async ({ max, addressesOnly, address, json, synth }) => {
+		synths
+			.holders({ max, address, addressesOnly, synth })
+			.then(results => (addressesOnly ? results.map(({ address }) => address) : results))
+			.then(results => console.log(json ? JSON.stringify(results, null, 2) : results));
+	});
+
+program
 	.command('rate.updates')
 	.option('-m, --max <value>', 'Maximum number of results', 10)
 	.option('-b, --min-block <value>', 'The smallest block to include, if any')

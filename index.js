@@ -395,6 +395,44 @@ module.exports = {
 				)
 				.catch(err => console.error(err));
 		},
+
+		holders({ max = 100, synth = undefined, address = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.snx,
+				max,
+				query: {
+					entity: 'synthHolders',
+					selection: {
+						orderBy: 'block',
+						orderDirection: 'desc',
+						where: {
+							account: address ? `\\"${address}\\"` : undefined,
+							source: synth ? `\\"${synth}\\"` : undefined,
+						},
+					},
+					properties: [
+						'id',
+						'account', // the address of the holder
+						'block', // the block this entity was last updated in
+						'timestamp', // the timestamp when this entity was last updated
+						'balanceOf', // SNX balance in their wallet
+						'source', // The synth currencyKey
+					],
+				},
+			})
+				.then(results =>
+					results.map(({ id, account, block, timestamp, balanceOf, source }) => ({
+						hash: id.split('-')[0],
+						address: account,
+						block: Number(block),
+						timestamp: Number(timestamp * 1000),
+						date: new Date(timestamp * 1000),
+						balanceOf: balanceOf ? balanceOf / 1e18 : null,
+						source,
+					})),
+				)
+				.catch(err => console.error(err));
+		},
 	},
 	rate: {
 		/**
