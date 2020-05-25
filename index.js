@@ -515,7 +515,7 @@ module.exports = {
 		},
 	},
 	snx: {
-		issued({ max = 100, account = undefined } = {}) {
+		issued({ max = 100, account = undefined, minBlock = undefined } = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.snx,
 				max,
@@ -526,6 +526,7 @@ module.exports = {
 						orderDirection: 'desc',
 						where: {
 							account: account ? `\\"${account}\\"` : undefined,
+							block_gte: minBlock || undefined,
 						},
 					},
 					properties: [
@@ -549,7 +550,7 @@ module.exports = {
 				.catch(err => console.error(err));
 		},
 
-		burned({ max = 100, account = undefined } = {}) {
+		burned({ max = 100, account = undefined, minBlock = undefined } = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.snx,
 				max,
@@ -560,6 +561,7 @@ module.exports = {
 						orderDirection: 'desc',
 						where: {
 							account: account ? `\\"${account}\\"` : undefined,
+							block_gte: minBlock || undefined,
 						},
 					},
 					properties: [

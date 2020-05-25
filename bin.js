@@ -234,20 +234,22 @@ program
 
 program
 	.command('snx.burned')
+	.option('-b, --min-block <value>', 'The smallest block to include, if any')
 	.option('-a, --account <value>', 'Account to filter on, if any')
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)
 
-	.action(async ({ max, account }) => {
-		snx.burned({ max, account }).then(console.log);
+	.action(async ({ minBlock, max, account }) => {
+		snx.burned({ minBlock, max, account }).then(console.log);
 	});
 
 program
 	.command('snx.issued')
+	.option('-b, --min-block <value>', 'The smallest block to include, if any')
 	.option('-a, --account <value>', 'Account to filter on, if any')
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)
 
-	.action(async ({ max, account }) => {
-		snx.issued({ max, account }).then(console.log);
+	.action(async ({ minBlock, max, account }) => {
+		snx.issued({ minBlock, max, account }).then(console.log);
 	});
 
 program
