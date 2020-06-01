@@ -261,6 +261,17 @@ program
 		snx.feesClaimed({ max, account }).then(console.log);
 	});
 
+program
+	.command('snx.debtSnapshot')
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-b, --min-block <value>', 'The smallest block to include, if any')
+	.option('-B, --max-block <value>', 'The biggest block to include, if any')
+	.option('-a, --account <value>', 'Account to filter on, if any')
+
+	.action(async ({ account, max, minBlock, maxBlock }) => {
+		snx.debtSnapshot({ account, max, minBlock, maxBlock }).then(console.log);
+	});
+
 program.command('exchanges.observe').action(async () => {
 	exchanges.observe().subscribe({
 		next(val) {

@@ -753,5 +753,44 @@ module.exports = {
 				)
 				.catch(err => console.error(err));
 		},
+		debtSnapshot({ account = undefined, max = 100, minBlock = undefined, maxBlock = undefined }) {
+			return pageResults({
+				api: graphAPIEndpoints.snx,
+				max,
+				query: {
+					entity: 'debtSnapshots',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'desc',
+						where: {
+							account: account ? `\\"${account}\\"` : undefined,
+							block_gte: minBlock || undefined,
+							block_lte: maxBlock || undefined,
+						},
+					},
+					properties: [
+						'id', // the transaction hash
+						'timestamp', // the timestamp when this transaction happened
+						'block', // the block in which this transaction happened
+						'account', // the address of debt holder
+						'balanceOf', // SNX balance in their wallet,
+						'collateral', // Synthetix.collateral (all collateral the account has, including escrowed )'collateral', // Synthetix.collateral (all collateral the account has, including escrowed )
+						'debtBalanceOf', // Account's Debt balance in sUSD
+					],
+				},
+			})
+				.then(results =>
+					results.map(({ id, timestamp, block, account, balanceOf, collateral, debtBalanceOf }) => ({
+						id,
+						timestamp: Number(timestamp * 1000),
+						block: Number(block),
+						account,
+						balanceOf: balanceOf ? balanceOf / 1e18 : null,
+						collateral: collateral ? collateral / 1e18 : null,
+						debtBalanceOf: debtBalanceOf ? debtBalanceOf / 1e18 : null,
+					})),
+				)
+				.catch(err => console.error(err));
+		},
 	},
 };
