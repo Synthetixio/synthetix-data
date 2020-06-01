@@ -28,6 +28,7 @@ The below all return a Promise that resolves with the requested results.
 16. `snx.issued` Get the `Issued` events in reverse chronological order.
 17. `snx.burned` Get the `Burned` events in reverse chronological order.
 18. `snx.feesClaimed` Get the `FeesClaimed` events in reverse chronological order, showing fees in sUSD and rewards in SNX.
+19. `snx.debtSnapshot` Get the historical debt balance for any wallet address.
 
 ## Supported subscriptions
 
