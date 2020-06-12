@@ -187,10 +187,13 @@ program
 	.option('-b, --min-block <value>', 'The smallest block to include, if any')
 	.option('-B, --max-block <value>', 'The biggest block to include, if any')
 	.option('-s, --synth <value>', 'Synth code')
+	.option('-j, --json', 'Whether or not to display the results as JSON')
 	.option('-t, --minTimestamp <value>', 'The oldest timestamp to include, if any')
 	.option('-T, --maxTimestamp <value>', 'The youngest timestamp to include, if any')
-	.action(async ({ max, synth, minBlock, maxBlock, minTimestamp, maxTimestamp }) => {
-		rate.updates({ max, synth, minBlock, maxBlock, minTimestamp, maxTimestamp }).then(console.log);
+	.action(async ({ max, synth, minBlock, maxBlock, minTimestamp, maxTimestamp, json }) => {
+		rate
+			.updates({ max, synth, minBlock, maxBlock, minTimestamp, maxTimestamp })
+			.then(results => console.log(json ? JSON.stringify(results, null, 2) : results));
 	});
 
 program
