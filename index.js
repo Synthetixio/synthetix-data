@@ -878,7 +878,7 @@ module.exports = {
 					type,
 					account,
 					currencyKey: hexToAscii(currencyKey),
-					side: side === '0' ? 'Long' : 'Short',
+					side: side === '0' ? 'long' : 'short',
 					amount: amount / 1e18,
 					market,
 				})),
