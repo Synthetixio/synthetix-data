@@ -4,7 +4,7 @@ const program = require('commander');
 const stringify = require('csv-stringify');
 const moment = require('moment');
 
-const { exchanges, depot, synths, rate, snx } = require('.');
+const { exchanges, depot, synths, rate, snx, binaryOptions } = require('.');
 
 program
 	.command('depot.userActions')
@@ -270,6 +270,23 @@ program
 
 	.action(async ({ account, max, minBlock, maxBlock }) => {
 		snx.debtSnapshot({ account, max, minBlock, maxBlock }).then(console.log);
+	});
+
+program
+	.command('binaryOptions.markets')
+	.option('-m, --max <value>', 'Maximum number of results', 100)
+	.option('-c, --creator <value>', 'The address of the market creator')
+	.action(async ({ max, creator }) => {
+		binaryOptions.markets({ max, creator }).then(console.log);
+	});
+
+program
+	.command('binaryOptions.optionTransactions')
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-M, --market <value>', 'The market address')
+	.option('-a, --account <value>', 'The account address')
+	.action(async ({ max, type, market, account }) => {
+		binaryOptions.optionTransactions({ max, type, market, account }).then(console.log);
 	});
 
 program.command('exchanges.observe').action(async () => {

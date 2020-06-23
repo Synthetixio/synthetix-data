@@ -10,6 +10,7 @@ const graphAPIEndpoints = {
 	depot: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-depot',
 	exchanges: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-exchanges',
 	rates: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-rates',
+	binaryOptions: 'https://api.thegraph.com/subgraphs/name/clementbalestrat/binaryoptions',
 };
 
 const graphWSEndpoints = {
@@ -791,6 +792,97 @@ module.exports = {
 					})),
 				)
 				.catch(err => console.error(err));
+		},
+	},
+	binaryOptions: {
+		markets({ max = 100, creator = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.binaryOptions,
+				max,
+				query: {
+					entity: 'markets',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'desc',
+						where: {
+							creator: creator ? `\\"${creator}\\"` : undefined,
+						},
+					},
+					properties: [
+						'id',
+						'timestamp',
+						'creator',
+						'currencyKey',
+						'strikePrice',
+						'biddingEndDate',
+						'maturityDate',
+						'expiryDate',
+						'isOpen',
+						'longPrice',
+						'shortPrice',
+						'poolSize',
+					],
+				},
+			}).then(results =>
+				results.map(
+					({
+						id,
+						timestamp,
+						creator,
+						currencyKey,
+						strikePrice,
+						biddingEndDate,
+						maturityDate,
+						expiryDate,
+						isOpen,
+						longPrice,
+						shortPrice,
+						poolSize,
+					}) => ({
+						address: id,
+						timestamp: Number(timestamp * 1000),
+						creator,
+						currencyKey: hexToAscii(currencyKey),
+						strikePrice: strikePrice / 1e18,
+						biddingEndDate: new Date(Number(biddingEndDate) * 1000),
+						maturityDate: new Date(Number(maturityDate) * 1000),
+						expiryDate: new Date(Number(expiryDate) * 1000),
+						isOpen,
+						longPrice: longPrice ? longPrice / 1e18 : null,
+						shortPrice: shortPrice ? shortPrice / 1e18 : null,
+						poolSize: poolSize ? poolSize / 1e18 : null,
+					}),
+				),
+			);
+		},
+		optionTransactions({ max = Infinity, market = undefined, account = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.binaryOptions,
+				max,
+				query: {
+					entity: 'optionTransactions',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'desc',
+						where: {
+							market: market ? `\\"${market}\\"` : undefined,
+							account: account ? `\\"${account}\\"` : undefined,
+						},
+					},
+					properties: ['id', 'timestamp', 'type', 'account', 'currencyKey', 'side', 'amount', 'market'],
+				},
+			}).then(results =>
+				results.map(({ id, timestamp, type, account, currencyKey, side, amount, market }) => ({
+					hash: id.split('-')[0],
+					timestamp: Number(timestamp * 1000),
+					type,
+					account,
+					currencyKey: hexToAscii(currencyKey),
+					side: side === '0' ? 'Long' : 'Short',
+					amount: amount / 1e18,
+					market,
+				})),
+			);
 		},
 	},
 };
