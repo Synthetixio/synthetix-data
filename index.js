@@ -869,10 +869,10 @@ module.exports = {
 							account: account ? `\\"${account}\\"` : undefined,
 						},
 					},
-					properties: ['id', 'timestamp', 'type', 'account', 'currencyKey', 'side', 'amount', 'market'],
+					properties: ['id', 'timestamp', 'type', 'account', 'currencyKey', 'side', 'amount', 'market', 'fee'],
 				},
 			}).then(results =>
-				results.map(({ id, timestamp, type, account, currencyKey, side, amount, market }) => ({
+				results.map(({ id, timestamp, type, account, currencyKey, side, amount, market, fee }) => ({
 					hash: id.split('-')[0],
 					timestamp: Number(timestamp * 1000),
 					type,
@@ -881,6 +881,7 @@ module.exports = {
 					side: side === '0' ? 'long' : 'short',
 					amount: amount / 1e18,
 					market,
+					fee: fee ? fee / 1e18 : null,
 				})),
 			);
 		},
