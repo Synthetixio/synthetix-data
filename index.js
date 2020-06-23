@@ -802,7 +802,7 @@ module.exports = {
 				query: {
 					entity: 'markets',
 					selection: {
-						orderBy: 'timestamp',
+						orderBy: 'biddingEndDate',
 						orderDirection: 'desc',
 						where: {
 							creator: creator ? `\\"${creator}\\"` : undefined,
