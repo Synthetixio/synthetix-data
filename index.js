@@ -848,9 +848,9 @@ module.exports = {
 						maturityDate: Number(maturityDate) * 1000,
 						expiryDate: Number(expiryDate) * 1000,
 						isOpen,
-						longPrice: longPrice ? longPrice / 1e18 : null,
-						shortPrice: shortPrice ? shortPrice / 1e18 : null,
-						poolSize: poolSize ? poolSize / 1e18 : null,
+						longPrice: longPrice / 1e18,
+						shortPrice: shortPrice / 1e18,
+						poolSize: poolSize / 1e18,
 					}),
 				),
 			);
@@ -882,6 +882,32 @@ module.exports = {
 					amount: amount / 1e18,
 					market,
 					fee: fee ? fee / 1e18 : null,
+				})),
+			);
+		},
+		historicalOptionPrice({ max = Infinity, market = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.binaryOptions,
+				max,
+				query: {
+					entity: 'historicalOptionPrices',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'desc',
+						where: {
+							market: market ? `\\"${market}\\"` : undefined,
+						},
+					},
+					properties: ['id', 'timestamp', 'longPrice', 'shortPrice', 'poolSize', 'market'],
+				},
+			}).then(results =>
+				results.map(({ id, timestamp, longPrice, shortPrice, poolSize, market }) => ({
+					id,
+					timestamp: Number(timestamp * 1000),
+					longPrice: longPrice / 1e18,
+					shortPrice: shortPrice / 1e18,
+					poolSize: poolSize / 1e18,
+					market,
 				})),
 			);
 		},

@@ -289,6 +289,14 @@ program
 		binaryOptions.optionTransactions({ max, type, market, account }).then(console.log);
 	});
 
+program
+	.command('binaryOptions.historicalOptionPrice')
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-M, --market <value>', 'The market address')
+	.action(async ({ max, market }) => {
+		binaryOptions.historicalOptionPrice({ max, market }).then(console.log);
+	});
+
 program.command('exchanges.observe').action(async () => {
 	exchanges.observe().subscribe({
 		next(val) {
