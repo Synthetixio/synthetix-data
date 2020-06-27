@@ -885,7 +885,12 @@ module.exports = {
 				})),
 			);
 		},
-		historicalOptionPrice({ max = Infinity, market = undefined } = {}) {
+		historicalOptionPrice({
+			max = Infinity,
+			market = undefined,
+			minTimestamp = undefined,
+			maxTimestamp = undefined,
+		} = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.binaryOptions,
 				max,
@@ -896,6 +901,8 @@ module.exports = {
 						orderDirection: 'desc',
 						where: {
 							market: market ? `\\"${market}\\"` : undefined,
+							timestamp_gte: minTimestamp || undefined,
+							timestamp_lte: maxTimestamp || undefined,
 						},
 					},
 					properties: ['id', 'timestamp', 'longPrice', 'shortPrice', 'poolSize', 'market'],

@@ -293,8 +293,10 @@ program
 	.command('binaryOptions.historicalOptionPrice')
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)
 	.option('-M, --market <value>', 'The market address')
-	.action(async ({ max, market }) => {
-		binaryOptions.historicalOptionPrice({ max, market }).then(console.log);
+	.option('-t, --minTimestamp <value>', 'The oldest timestamp to include, if any')
+	.option('-T, --maxTimestamp <value>', 'The youngest timestamp to include, if any')
+	.action(async ({ max, market, minTimestamp, maxTimestamp }) => {
+		binaryOptions.historicalOptionPrice({ max, market, minTimestamp, maxTimestamp }).then(console.log);
 	});
 
 program.command('exchanges.observe').action(async () => {
