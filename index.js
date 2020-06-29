@@ -821,6 +821,7 @@ module.exports = {
 						'longPrice',
 						'shortPrice',
 						'poolSize',
+						'result',
 					],
 				},
 			}).then(results =>
@@ -838,6 +839,7 @@ module.exports = {
 						longPrice,
 						shortPrice,
 						poolSize,
+						result,
 					}) => ({
 						address: id,
 						timestamp: Number(timestamp * 1000),
@@ -851,6 +853,7 @@ module.exports = {
 						longPrice: longPrice / 1e18,
 						shortPrice: shortPrice / 1e18,
 						poolSize: poolSize / 1e18,
+						result: result !== null ? (result === 0 ? 'long' : 'short') : null,
 					}),
 				),
 			);
@@ -878,7 +881,7 @@ module.exports = {
 					type,
 					account,
 					currencyKey: hexToAscii(currencyKey),
-					side: side === '0' ? 'long' : 'short',
+					side: side === 0 ? 'long' : 'short',
 					amount: amount / 1e18,
 					market,
 					fee: fee ? fee / 1e18 : null,
