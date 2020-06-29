@@ -32,6 +32,7 @@ The below all return a Promise that resolves with the requested results.
 20. `binaryOptions.markets` Get all the binary options markets created.
 21. `binaryOptions.optionTransactions` Get all the Bid and Refund transactions made to the binary options markets.
 22. `binaryOptions.historicalOptionPrice` Get historical records of every option price for every market.
+23. `etherCollateral.loans` Get the list of all EtherCollateral loans opened.
 
 ## Supported subscriptions
 
