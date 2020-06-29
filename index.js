@@ -11,6 +11,7 @@ const graphAPIEndpoints = {
 	exchanges: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-exchanges',
 	rates: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-rates',
 	binaryOptions: 'https://api.thegraph.com/subgraphs/name/clementbalestrat/binaryoptions',
+	etherCollateral: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-loans',
 };
 
 const graphWSEndpoints = {
@@ -920,6 +921,37 @@ module.exports = {
 					market,
 				})),
 			);
+		},
+	},
+	etherCollateral: {
+		loans({ max = Infinity, isOpen = undefined, account = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.etherCollateral,
+				max,
+				query: {
+					entity: 'loans',
+					selection: {
+						orderBy: 'createdAt',
+						orderDirection: 'desc',
+						where: {
+							account: account ? `\\"${account}\\"` : undefined,
+							isOpen,
+						},
+					},
+					properties: ['id', 'account', 'amount', 'isOpen', 'createdAt', 'closedAt'],
+				},
+			})
+				.then(results =>
+					results.map(({ id, account, amount, isOpen, createdAt, closedAt }) => ({
+						id: Number(id),
+						account,
+						createdAt: new Date(Number(createdAt * 1000)),
+						closedAt: closedAt ? new Date(Number(closedAt * 1000)) : null,
+						amount: amount / 1e18,
+						isOpen,
+					})),
+				)
+				.catch(err => console.error(err));
 		},
 	},
 };

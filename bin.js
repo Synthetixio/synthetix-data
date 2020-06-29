@@ -4,7 +4,7 @@ const program = require('commander');
 const stringify = require('csv-stringify');
 const moment = require('moment');
 
-const { exchanges, depot, synths, rate, snx, binaryOptions } = require('.');
+const { exchanges, depot, synths, rate, snx, binaryOptions, etherCollateral } = require('.');
 
 program
 	.command('depot.userActions')
@@ -276,6 +276,7 @@ program
 	.command('binaryOptions.markets')
 	.option('-m, --max <value>', 'Maximum number of results', 100)
 	.option('-c, --creator <value>', 'The address of the market creator')
+
 	.action(async ({ max, creator }) => {
 		binaryOptions.markets({ max, creator }).then(console.log);
 	});
@@ -285,6 +286,7 @@ program
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)
 	.option('-M, --market <value>', 'The market address')
 	.option('-a, --account <value>', 'The account address')
+
 	.action(async ({ max, type, market, account }) => {
 		binaryOptions.optionTransactions({ max, type, market, account }).then(console.log);
 	});
@@ -295,8 +297,19 @@ program
 	.option('-M, --market <value>', 'The market address')
 	.option('-t, --minTimestamp <value>', 'The oldest timestamp to include, if any')
 	.option('-T, --maxTimestamp <value>', 'The youngest timestamp to include, if any')
+
 	.action(async ({ max, market, minTimestamp, maxTimestamp }) => {
 		binaryOptions.historicalOptionPrice({ max, market, minTimestamp, maxTimestamp }).then(console.log);
+	});
+
+program
+	.command('etherCollateral.loans')
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-a, --account <value>', 'Account to filter on, if any')
+	.option('-o, --is-open <value>', 'If the loan is open or closed')
+
+	.action(async ({ max, account, isOpen }) => {
+		etherCollateral.loans({ max, account, isOpen }).then(console.log);
 	});
 
 program.command('exchanges.observe').action(async () => {
