@@ -10,7 +10,7 @@ const graphAPIEndpoints = {
 	depot: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-depot',
 	exchanges: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-exchanges',
 	rates: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-rates',
-	binaryOptions: 'https://api.thegraph.com/subgraphs/name/clementbalestrat/binaryoptions',
+	binaryOptions: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-binary-options',
 	etherCollateral: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-loans',
 };
 
