@@ -2,6 +2,7 @@
 
 const ws = require('ws');
 const { SubscriptionClient } = require('subscriptions-transport-ws');
+const uniq = require('lodash').uniq;
 
 const pageResults = require('graph-results-pager');
 
@@ -888,6 +889,24 @@ module.exports = {
 					fee: fee ? fee / 1e18 : null,
 				})),
 			);
+		},
+		marketsBidOn({ max = Infinity, account = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.binaryOptions,
+				max,
+				query: {
+					entity: 'optionTransactions',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'desc',
+						where: {
+							type: 'bid',
+							account: account ? `\\"${account}\\"` : undefined,
+						},
+					},
+					properties: ['market'],
+				},
+			}).then(results => uniq(results.map(({ market }) => market)));
 		},
 		historicalOptionPrice({
 			max = Infinity,
