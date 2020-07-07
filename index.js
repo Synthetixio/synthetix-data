@@ -889,6 +889,24 @@ module.exports = {
 				})),
 			);
 		},
+		marketsBidOn({ max = Infinity, account = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.binaryOptions,
+				max,
+				query: {
+					entity: 'optionTransactions',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'desc',
+						where: {
+							type: 'bid',
+							account: account ? `\\"${account}\\"` : undefined,
+						},
+					},
+					properties: ['market'],
+				},
+			}).then(results => results.map(({ market }) => market).filter((val, i, arr) => arr.indexOf(val) === i));
+		},
 		historicalOptionPrice({
 			max = Infinity,
 			market = undefined,

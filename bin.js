@@ -295,6 +295,15 @@ program
 	});
 
 program
+	.command('binaryOptions.marketsBidOn')
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-a, --account <value>', 'The account address')
+
+	.action(async ({ max, account }) => {
+		binaryOptions.marketsBidOn({ max, account }).then(console.log);
+	});
+
+program
 	.command('binaryOptions.historicalOptionPrice')
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)
 	.option('-M, --market <value>', 'The market address')
