@@ -18,7 +18,6 @@
 		"csv-stringify": "5.3.3",
 		"graph-results-pager": "~1.0.0",
 		"graphql": "14.5.8",
-		"lodash": "^4.17.15",
 		"moment": "~2.24.0",
 		"node-fetch": "2.6.0",
 		"subscriptions-transport-ws": "0.9.16",

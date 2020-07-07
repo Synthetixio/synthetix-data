@@ -2,7 +2,6 @@
 
 const ws = require('ws');
 const { SubscriptionClient } = require('subscriptions-transport-ws');
-const uniq = require('lodash').uniq;
 
 const pageResults = require('graph-results-pager');
 
@@ -906,7 +905,7 @@ module.exports = {
 					},
 					properties: ['market'],
 				},
-			}).then(results => uniq(results.map(({ market }) => market)));
+			}).then(results => results.map(({ market }) => market).filter((val, i, arr) => arr.indexOf(val) === i));
 		},
 		historicalOptionPrice({
 			max = Infinity,
