@@ -796,7 +796,7 @@ module.exports = {
 		},
 	},
 	binaryOptions: {
-		markets({ max = 100, creator = undefined } = {}) {
+		markets({ max = 100, creator = undefined, isOpen = undefined } = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.binaryOptions,
 				max,
@@ -807,6 +807,7 @@ module.exports = {
 						orderDirection: 'desc',
 						where: {
 							creator: creator ? `\\"${creator}\\"` : undefined,
+							isOpen: isOpen !== undefined ? isOpen : undefined,
 						},
 					},
 					properties: [

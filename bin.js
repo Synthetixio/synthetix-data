@@ -279,9 +279,10 @@ program
 	.command('binaryOptions.markets')
 	.option('-m, --max <value>', 'Maximum number of results', 100)
 	.option('-c, --creator <value>', 'The address of the market creator')
+	.option('-o, --isOpen', 'If the market is open or not')
 
-	.action(async ({ max, creator }) => {
-		binaryOptions.markets({ max, creator }).then(console.log);
+	.action(async ({ max, creator, isOpen }) => {
+		binaryOptions.markets({ max, creator, isOpen }).then(console.log);
 	});
 
 program
