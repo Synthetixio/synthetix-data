@@ -4,7 +4,7 @@ const program = require('commander');
 const stringify = require('csv-stringify');
 const moment = require('moment');
 
-const { exchanges, depot, synths, rate, snx, binaryOptions, etherCollateral } = require('.');
+const { exchanges, depot, synths, rate, snx, binaryOptions, etherCollateral, limitOrders } = require('.');
 
 program
 	.command('depot.userActions')
@@ -323,6 +323,15 @@ program
 
 	.action(async ({ max, account, isOpen }) => {
 		etherCollateral.loans({ max, account, isOpen }).then(console.log);
+	});
+
+program
+	.command('limitOrders.orders')
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-a, --account <value>', 'Account to filter on, if any')
+
+	.action(async ({ max, account }) => {
+		limitOrders.orders({ max, account }).then(console.log);
 	});
 
 program.command('exchanges.observe').action(async () => {
