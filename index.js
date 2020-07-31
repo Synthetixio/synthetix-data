@@ -990,8 +990,11 @@ module.exports = {
 					},
 					properties: [
 						'id',
+						'hash',
+						'timestamp',
 						'submitter',
 						'sourceCurrencyKey',
+						'sourceAmount',
 						'destinationCurrencyKey',
 						'minDestinationAmount',
 						'executionFee',
@@ -1004,8 +1007,11 @@ module.exports = {
 					results.map(
 						({
 							id,
+							hash,
+							timestamp,
 							submitter,
 							sourceCurrencyKey,
+							sourceAmount,
 							destinationCurrencyKey,
 							minDestinationAmount,
 							executionFee,
@@ -1013,8 +1019,11 @@ module.exports = {
 							status,
 						}) => ({
 							id: Number(id),
+							hash,
+							timestamp: Number(timestamp * 1000),
 							account: submitter,
 							sourceCurrencyKey: hexToAscii(sourceCurrencyKey),
+							sourceAmount: sourceAmount / 1e18,
 							destinationCurrencyKey: hexToAscii(destinationCurrencyKey),
 							minDestinationAmount: minDestinationAmount / 1e18,
 							executionFee: executionFee / 1e18,
