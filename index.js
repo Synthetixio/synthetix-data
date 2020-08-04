@@ -12,7 +12,7 @@ const graphAPIEndpoints = {
 	rates: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-rates',
 	binaryOptions: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-binary-options',
 	etherCollateral: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-loans',
-	limitOrders: 'https://api.thegraph.com/subgraphs/name/clementbalestrat/limitorders',
+	limitOrders: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-limit-orders',
 };
 
 const graphWSEndpoints = {
