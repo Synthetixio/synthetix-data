@@ -12,6 +12,7 @@ const graphAPIEndpoints = {
 	rates: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-rates',
 	binaryOptions: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-binary-options',
 	etherCollateral: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-loans',
+	limitOrders: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-limit-orders',
 };
 
 const graphWSEndpoints = {
@@ -969,6 +970,67 @@ module.exports = {
 						amount: amount / 1e18,
 						isOpen,
 					})),
+				)
+				.catch(err => console.error(err));
+		},
+	},
+	limitOrders: {
+		orders({ max = Infinity, account = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.limitOrders,
+				max,
+				query: {
+					entity: 'limitOrders',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'desc',
+						where: {
+							submitter: account ? `\\"${account}\\"` : undefined,
+						},
+					},
+					properties: [
+						'id',
+						'hash',
+						'timestamp',
+						'submitter',
+						'sourceCurrencyKey',
+						'sourceAmount',
+						'destinationCurrencyKey',
+						'minDestinationAmount',
+						'executionFee',
+						'deposit',
+						'status',
+					],
+				},
+			})
+				.then(results =>
+					results.map(
+						({
+							id,
+							hash,
+							timestamp,
+							submitter,
+							sourceCurrencyKey,
+							sourceAmount,
+							destinationCurrencyKey,
+							minDestinationAmount,
+							executionFee,
+							deposit,
+							status,
+						}) => ({
+							id: Number(id),
+							hash,
+							timestamp: Number(timestamp * 1000),
+							account: submitter,
+							sourceCurrencyKey: hexToAscii(sourceCurrencyKey),
+							sourceAmount: sourceAmount / 1e18,
+							destinationCurrencyKey: hexToAscii(destinationCurrencyKey),
+							minDestinationAmount: minDestinationAmount / 1e18,
+							executionFee: executionFee / 1e18,
+							deposit: deposit / 1e18,
+							status,
+						}),
+					),
 				)
 				.catch(err => console.error(err));
 		},
