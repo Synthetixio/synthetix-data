@@ -1047,7 +1047,7 @@ module.exports = {
 						orderBy: 'exchangeTimestamp',
 						orderDirection: 'desc',
 						where: {
-							submitter: from ? `\\"${from}\\"` : undefined,
+							from: from ? `\\"${from}\\"` : undefined,
 						},
 					},
 					properties: [
