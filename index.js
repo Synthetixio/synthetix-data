@@ -13,6 +13,7 @@ const graphAPIEndpoints = {
 	binaryOptions: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-binary-options',
 	etherCollateral: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-loans',
 	limitOrders: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-limit-orders',
+	exchanger: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-exchanger',
 };
 
 const graphWSEndpoints = {
@@ -1029,6 +1030,64 @@ module.exports = {
 							executionFee: executionFee / 1e18,
 							deposit: deposit / 1e18,
 							status,
+						}),
+					),
+				)
+				.catch(err => console.error(err));
+		},
+	},
+	exchanger: {
+		exchangeEntriesSettled({ max = 100, from = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.exchanger,
+				max,
+				query: {
+					entity: 'exchangeEntrySettleds',
+					selection: {
+						orderBy: 'exchangeTimestamp',
+						orderDirection: 'desc',
+						where: {
+							submitter: from ? `\\"${from}\\"` : undefined,
+						},
+					},
+					properties: [
+						'id',
+						'from',
+						'src',
+						'amount',
+						'dest',
+						'reclaim',
+						'rebate',
+						'srcRoundIdAtPeriodEnd',
+						'destRoundIdAtPeriodEnd',
+						'exchangeTimestamp',
+					],
+				},
+			})
+				.then(results =>
+					results.map(
+						({
+							id,
+							from,
+							src,
+							amount,
+							dest,
+							reclaim,
+							rebate,
+							srcRoundIdAtPeriodEnd,
+							destRoundIdAtPeriodEnd,
+							exchangeTimestamp,
+						}) => ({
+							id: Number(id),
+							from,
+							src: hexToAscii(src),
+							amount: amount / 1e18,
+							dest: hexToAscii(dest),
+							reclaim: reclaim / 1e18,
+							rebate: rebate / 1e18,
+							srcRoundIdAtPeriodEnd: srcRoundIdAtPeriodEnd / 1e18,
+							destRoundIdAtPeriodEnd: destRoundIdAtPeriodEnd / 1e18,
+							exchangeTimestamp: Number(exchangeTimestamp * 1000),
 						}),
 					),
 				)
