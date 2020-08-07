@@ -1051,6 +1051,7 @@ module.exports = {
 						},
 					},
 					properties: [
+						'id',
 						'from',
 						'src',
 						'amount',
@@ -1066,6 +1067,7 @@ module.exports = {
 				.then(results =>
 					results.map(
 						({
+							id,
 							from,
 							src,
 							amount,
@@ -1076,6 +1078,7 @@ module.exports = {
 							destRoundIdAtPeriodEnd,
 							exchangeTimestamp,
 						}) => ({
+							hash: id.split('-')[0],
 							from,
 							src: hexToAscii(src),
 							amount: amount / 1e18,
