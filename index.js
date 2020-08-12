@@ -221,6 +221,32 @@ module.exports = {
 				.catch(err => console.error(err));
 		},
 		/**
+		 * Get the aggregate exchange totals based on time periods.
+		 */
+		aggregate({ entity = 'dailyTotals', max = 30 } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.exchanges,
+				max,
+				query: {
+					entity: `${entity}`,
+					selection: {
+						orderBy: 'id',
+						orderDirection: 'desc',
+					},
+					properties: ['id', 'exchangers', 'exchangeUSDTally', 'totalFeesGeneratedInUSD'],
+				},
+			})
+				.then(results =>
+					results.map(({ id, exchangers, exchangeUSDTally, totalFeesGeneratedInUSD }) => ({
+						id,
+						exchangers: Number(exchangers),
+						exchangeUSDTally: exchangeUSDTally / 1e18,
+						totalFeesGeneratedInUSD: totalFeesGeneratedInUSD / 1e18,
+					})),
+				)
+				.catch(err => console.error(err));
+		},
+		/**
 		 * Get all exchanges since some timestamp in seconds or minimum block (ordered reverse chronological)
 		 */
 		since({

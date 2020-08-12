@@ -36,6 +36,14 @@ program.command('exchanges.total').action(async () => {
 });
 
 program
+	.command('exchanges.aggregate')
+	.option('-e, --entity <value>', 'The type of total - dailyTotals, fifteenMinuteTotals', 'dailyTotals')
+	.option('-m, --max <value>', 'Maximum number of results', 30)
+	.action(async ({ entity, max }) => {
+		exchanges.aggregate({ entity, max }).then(console.log);
+	});
+
+program
 	.command('exchanges.since')
 	.option(
 		'-t, --min-timestamp <value>',
