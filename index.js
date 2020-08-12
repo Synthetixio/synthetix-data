@@ -223,12 +223,21 @@ module.exports = {
 		/**
 		 * Get the aggregate exchange totals based on time periods.
 		 */
-		aggregate({ entity = 'dailyTotals', max = 30 } = {}) {
+		aggregate({ entity = '1d', max = 30 } = {}) {
+			let formattedEntity;
+			if (entity === '1d') {
+				formattedEntity = 'dailyTotals';
+			} else if (entity === '15m') {
+				formattedEntity = 'fifteenMinuteTotals';
+			} else {
+				throw new Error('invalid entity: only "1d" or "15m" are valid periods');
+			}
+
 			return pageResults({
 				api: graphAPIEndpoints.exchanges,
 				max,
 				query: {
-					entity: `${entity}`,
+					entity: `${formattedEntity}`,
 					selection: {
 						orderBy: 'id',
 						orderDirection: 'desc',
