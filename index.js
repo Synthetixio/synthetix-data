@@ -232,7 +232,6 @@ module.exports = {
 			} else {
 				throw new Error('invalid timeSeries: only "1d" or "15m" are valid periods');
 			}
-			a;
 
 			return pageResults({
 				api: graphAPIEndpoints.exchanges,
