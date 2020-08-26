@@ -209,11 +209,12 @@ module.exports = {
 							id: `\\"${network}\\"`,
 						},
 					},
-					properties: ['exchangers', 'exchangeUSDTally', 'totalFeesGeneratedInUSD'],
+					properties: ['trades', 'exchangers', 'exchangeUSDTally', 'totalFeesGeneratedInUSD'],
 				},
 				max: 1,
 			})
-				.then(([{ exchangers, exchangeUSDTally, totalFeesGeneratedInUSD }]) => ({
+				.then(([{ exchangers, exchangeUSDTally, totalFeesGeneratedInUSD, trades }]) => ({
+					trades: Number(trades),
 					exchangers: Number(exchangers),
 					exchangeUSDTally: exchangeUSDTally / 1e18,
 					totalFeesGeneratedInUSD: totalFeesGeneratedInUSD / 1e18,
@@ -466,6 +467,28 @@ module.exports = {
 		},
 	},
 	rate: {
+		snxAggregate({ timeSeries = '1d', max = 30 } = {}) {
+			const entityMap = { '1d': 'dailySNXPrices', '15m': 'fifteenMinuteSNXPrices' };
+			return pageResults({
+				api: graphAPIEndpoints.rates,
+				max,
+				query: {
+					entity: `${entityMap[timeSeries]}`,
+					selection: {
+						orderBy: 'id',
+						orderDirection: 'desc',
+					},
+					properties: ['id', 'averagePrice'],
+				},
+			})
+				.then(results =>
+					results.map(({ id, averagePrice }) => ({
+						id,
+						averagePrice: averagePrice / 1e18,
+					})),
+				)
+				.catch(err => console.error(err));
+		},
 		/**
 		 * Get the last max RateUpdate events for the given synth in reverse order
 		 */
