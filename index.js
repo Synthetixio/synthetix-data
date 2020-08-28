@@ -235,12 +235,13 @@ module.exports = {
 						orderBy: 'id',
 						orderDirection: 'desc',
 					},
-					properties: ['id', 'exchangers', 'exchangeUSDTally', 'totalFeesGeneratedInUSD'],
+					properties: ['id', 'trades', 'exchangers', 'exchangeUSDTally', 'totalFeesGeneratedInUSD'],
 				},
 			})
 				.then(results =>
-					results.map(({ id, exchangers, exchangeUSDTally, totalFeesGeneratedInUSD }) => ({
+					results.map(({ id, trades, exchangers, exchangeUSDTally, totalFeesGeneratedInUSD }) => ({
 						id,
+						trades: Number(trades),
 						exchangers: Number(exchangers),
 						exchangeUSDTally: exchangeUSDTally / 1e18,
 						totalFeesGeneratedInUSD: totalFeesGeneratedInUSD / 1e18,
