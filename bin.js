@@ -36,6 +36,14 @@ program.command('exchanges.total').action(async () => {
 });
 
 program
+	.command('exchanges.aggregate')
+	.option('-t, --timeSeries <value>', 'The type of timeSeries - 1d, 15m', '1d')
+	.option('-m, --max <value>', 'Maximum number of results', 30)
+	.action(async ({ timeSeries, max }) => {
+		exchanges.aggregate({ timeSeries, max }).then(console.log);
+	});
+
+program
 	.command('exchanges.since')
 	.option(
 		'-t, --min-timestamp <value>',
