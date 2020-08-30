@@ -434,7 +434,7 @@ module.exports = {
 				query: {
 					entity: 'synthHolders',
 					selection: {
-						orderBy: 'block',
+						orderBy: 'collateral',
 						orderDirection: 'desc',
 						where: {
 							account: address ? `\\"${address}\\"` : undefined,
