@@ -436,7 +436,7 @@ module.exports = {
 				query: {
 					entity: 'synthHolders',
 					selection: {
-						orderBy: 'collateral',
+						orderBy: 'balanceOf',
 						orderDirection: 'desc',
 						where: {
 							account: address ? `\\"${address}\\"` : undefined,
@@ -448,7 +448,7 @@ module.exports = {
 						'account', // the address of the holder
 						'block', // the block this entity was last updated in
 						'timestamp', // the timestamp when this entity was last updated
-						'balanceOf', // SNX balance in their wallet
+						'balanceOf', // synth balance in their wallet
 						'source', // The synth currencyKey
 					],
 				},
