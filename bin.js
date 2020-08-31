@@ -190,6 +190,14 @@ program
 	});
 
 program
+	.command('rate.snxAggregate')
+	.option('-t, --timeSeries <value>', 'The type of timeSeries - 1d, 15m', '1d')
+	.option('-m, --max <value>', 'Maximum number of results', 30)
+	.action(async ({ timeSeries, max }) => {
+		rate.snxAggregate({ timeSeries, max }).then(console.log);
+	});
+
+program
 	.command('rate.updates')
 	.option('-m, --max <value>', 'Maximum number of results', 10)
 	.option('-b, --min-block <value>', 'The smallest block to include, if any')
