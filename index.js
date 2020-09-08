@@ -640,6 +640,34 @@ module.exports = {
 				.catch(err => console.error(err));
 		},
 
+		aggregateActiveStakers({ max = 30 } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.snx,
+				max,
+				query: {
+					entity: 'totalDailyActiveStakers',
+					selection: {
+						orderBy: 'id',
+						orderDirection: 'desc',
+					},
+					properties: ['id', 'count'],
+				},
+			}).catch(err => console.error(err));
+		},
+
+		totalActiveStakers() {
+			return pageResults({
+				api: graphAPIEndpoints.snx,
+				max: 1,
+				query: {
+					entity: 'totalActiveStakers',
+					properties: ['count'],
+				},
+			})
+				.then(([{ count }]) => ({ count }))
+				.catch(err => console.error(err));
+		},
+
 		holders({ max = 100, address = undefined } = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.snx,

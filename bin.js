@@ -230,6 +230,17 @@ program.command('snx.total').action(async () => {
 });
 
 program
+	.command('snx.aggregateActiveStakers')
+	.option('-m, --max <value>', 'Maximum number of results', 30)
+	.action(async ({ max }) => {
+		snx.aggregateActiveStakers({ max }).then(console.log);
+	});
+
+program.command('snx.totalActiveStakers').action(async () => {
+	snx.totalActiveStakers().then(console.log);
+});
+
+program
 	.command('snx.transfers')
 	.option('-f, --from <value>', 'A from address')
 	.option('-t, --to <value>', 'A to address')
