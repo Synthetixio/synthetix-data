@@ -35,6 +35,8 @@ const hexToAscii = str => {
 	return out;
 };
 
+const roundTimestampTenSeconds = timestamp => Math.round(timestamp / 10) * 10;
+
 module.exports = {
 	pageResults,
 	graphAPIEndpoints,
@@ -271,8 +273,8 @@ module.exports = {
 						orderDirection: 'desc',
 						where: {
 							network: `\\"${network}\\"`,
-							timestamp_gte: minTimestamp || undefined,
-							timestamp_lte: maxTimestamp || undefined,
+							timestamp_gte: roundTimestampTenSeconds(minTimestamp) || undefined,
+							timestamp_lte: roundTimestampTenSeconds(maxTimestamp) || undefined,
 							block_gte: minBlock || undefined,
 							block_lte: maxBlock || undefined,
 							from: fromAddress ? `\\"${fromAddress}\\"` : undefined,
@@ -516,8 +518,8 @@ module.exports = {
 								: undefined, // ignore non-synth prices
 							block_gte: minBlock || undefined,
 							block_lte: maxBlock || undefined,
-							timestamp_gte: minTimestamp || undefined,
-							timestamp_lte: maxTimestamp || undefined,
+							timestamp_gte: roundTimestampTenSeconds(minTimestamp) || undefined,
+							timestamp_lte: roundTimestampTenSeconds(maxTimestamp) || undefined,
 						},
 					},
 					properties: ['id', 'synth', 'rate', 'block', 'timestamp'],
@@ -877,7 +879,13 @@ module.exports = {
 		},
 	},
 	binaryOptions: {
-		markets({ max = 100, creator = undefined, isOpen = undefined } = {}) {
+		markets({
+			max = 100,
+			creator = undefined,
+			isOpen = undefined,
+			minTimestamp = undefined,
+			maxTimestamp = undefined,
+		} = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.binaryOptions,
 				max,
@@ -889,6 +897,8 @@ module.exports = {
 						where: {
 							creator: creator ? `\\"${creator}\\"` : undefined,
 							isOpen: isOpen !== undefined ? isOpen : undefined,
+							timestamp_gte: minTimestamp || undefined,
+							timestamp_lte: maxTimestamp || undefined,
 						},
 					},
 					properties: [
