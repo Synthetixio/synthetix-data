@@ -307,8 +307,10 @@ program
 	.option('-m, --max <value>', 'Maximum number of results', 100)
 	.option('-c, --creator <value>', 'The address of the market creator')
 	.option('-o, --isOpen', 'If the market is open or not')
+	.option('-t, --minTimestamp <value>', 'The oldest timestamp to include, if any')
+	.option('-T, --maxTimestamp <value>', 'The youngest timestamp to include, if any')
 
-	.action(async ({ max, creator, isOpen }) => {
+	.action(async ({ max, creator, isOpen, minTimestamp, maxTimestamp }) => {
 		binaryOptions.markets({ max, creator, isOpen }).then(console.log);
 	});
 
