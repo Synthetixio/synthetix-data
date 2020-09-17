@@ -441,29 +441,22 @@ module.exports = {
 						orderBy: 'balanceOf',
 						orderDirection: 'desc',
 						where: {
-							account: address ? `\\"${address}\\"` : undefined,
-							source: synth ? `\\"${synth}\\"` : undefined,
+							id: address && synth ? `\\"${address + '-' + synth}\\"` : undefined,
+							synth: synth ? `\\"${synth}\\"` : undefined,
 						},
 					},
 					properties: [
-						'id',
-						'account', // the address of the holder
-						'block', // the block this entity was last updated in
-						'timestamp', // the timestamp when this entity was last updated
+						'id', // the address of the holder plus the synth
 						'balanceOf', // synth balance in their wallet
-						'source', // The synth currencyKey
+						'synth', // The synth currencyKey
 					],
 				},
 			})
 				.then(results =>
-					results.map(({ id, account, block, timestamp, balanceOf, source }) => ({
-						hash: id.split('-')[0],
-						address: account,
-						block: Number(block),
-						timestamp: Number(timestamp * 1000),
-						date: new Date(timestamp * 1000),
+					results.map(({ id, balanceOf, synth }) => ({
+						address: id.split('-')[0],
 						balanceOf: balanceOf ? balanceOf / 1e18 : null,
-						source,
+						synth,
 					})),
 				)
 				.catch(err => console.error(err));
