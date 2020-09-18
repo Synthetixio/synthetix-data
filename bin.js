@@ -244,6 +244,13 @@ program
 	});
 
 program
+	.command('rate.dailyRateChange')
+	.option('-s, --synths <value>', 'List of synth codes')
+	.action(async ({ synths }) => {
+		rate.dailyRateChange({ synths }).then(console.log);
+	});
+
+program
 	.command('snx.holders')
 	.option('-a, --address <value>', 'Address to filter on, if any')
 	.option('-m, --max <value>', 'Maximum number of results', 100)

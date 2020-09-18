@@ -530,6 +530,45 @@ module.exports = {
 				)
 				.catch(err => console.error(err));
 		},
+		dailyRateChange({ synths = [] }) {
+			return synths.reduce(async (synthRateList, synth) => {
+				const latestRate = await pageResults({
+					api: graphAPIEndpoints.rates,
+					max: 1,
+					query: {
+						entity: 'latestRates',
+						selection: {
+							orderBy: 'id',
+							orderDirection: 'desc',
+						},
+						properties: ['id', 'rate'],
+					},
+				});
+				const dayDate = new Date();
+				dayDate.setDate(dayDate.getDate() - 1);
+				const timestamp = roundTimestampTenSeconds(parseInt(dayDate.getTime() / 1000));
+				const dayOldRate = await pageResults({
+					api: graphAPIEndpoints.rates,
+					max: 1,
+					query: {
+						entity: 'rateUpdates',
+						selection: {
+							orderBy: 'timestamp',
+							orderDirection: 'desc',
+							where: {
+								synth: `\\"${synth}\\"`,
+								timestamp_lte: timestamp,
+							},
+						},
+						properties: ['id', 'rate'],
+					},
+				});
+				if (latestRate.length > 0 && latestRate[0].rate && dayOldRate.length > 0 && dayOldRate[0].rate) {
+					synthRateList.push({ synth, dailyRateChange: latestRate[0].rate / dayOldRate[0].rate });
+				}
+				return synthRateList;
+			}, Promise.resolve([]));
+		},
 		observe({ minTimestamp = Math.round(Date.now() / 1000) } = {}) {
 			const client = new SubscriptionClient(
 				graphWSEndpoints.rates,
