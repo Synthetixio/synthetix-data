@@ -538,10 +538,11 @@ module.exports = {
 					query: {
 						entity: 'latestRates',
 						selection: {
-							orderBy: 'id',
-							orderDirection: 'desc',
+							where: {
+								synth: `\\"${synth}\\"`,
+							},
 						},
-						properties: ['id', 'rate'],
+						properties: ['rate'],
 					},
 				});
 				const dayDate = new Date();
@@ -560,7 +561,7 @@ module.exports = {
 								timestamp_lte: timestamp,
 							},
 						},
-						properties: ['id', 'rate'],
+						properties: ['rate'],
 					},
 				});
 				if (latestRate.length > 0 && latestRate[0].rate && dayOldRate.length > 0 && dayOldRate[0].rate) {
