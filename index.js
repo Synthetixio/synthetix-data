@@ -71,7 +71,7 @@ module.exports = {
 						date: new Date(timestamp * 1000),
 					})),
 				)
-				.catch(err => console.error(err));
+				.catch(err => console.log(err));
 		},
 		clearedDeposits({ network = 'mainnet', fromAddress = undefined, toAddress = undefined, max = 100 }) {
 			return pageResults({
@@ -663,7 +663,7 @@ module.exports = {
 				.catch(err => console.error(err));
 		},
 
-		holders({ max = 100, address = undefined } = {}) {
+		holders({ max = 100, maxCollateral = undefined, minCollateral = undefined, address = undefined } = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.snx,
 				max,
@@ -674,6 +674,8 @@ module.exports = {
 						orderDirection: 'desc',
 						where: {
 							id: address ? `\\"${address}\\"` : undefined,
+							collateral_lte: maxCollateral ? `\\"${maxCollateral + '0'.repeat(18)}\\"` : undefined,
+							collateral_gte: minCollateral ? `\\"${minCollateral + '0'.repeat(18)}\\"` : undefined,
 						},
 					},
 					properties: [
