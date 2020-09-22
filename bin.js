@@ -6,12 +6,26 @@ const moment = require('moment');
 
 const { exchanges, depot, synths, rate, snx, binaryOptions, etherCollateral, limitOrders, exchanger } = require('.');
 
+const logResults = ({ json } = {}) => results => {
+	console.log(json ? JSON.stringify(results, null, 2) : results);
+	return results;
+};
+
+const showResultCount = ({ max }) => results => {
+	if (process.env.DEBUG) {
+		console.log(`${results.length} entries returned (max supplied: ${max})`);
+	}
+};
+
 program
 	.command('depot.userActions')
 	.option('-u, --user <value>', 'An address')
 	.option('-m, --max <value>', 'Maximum number of results', 10)
 	.action(async ({ max, user }) => {
-		depot.userActions({ max, user }).then(console.log);
+		depot
+			.userActions({ max, user })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -19,8 +33,11 @@ program
 	.option('-f, --from-address <value>', 'A from address')
 	.option('-t, --to-address <value>', 'A to address')
 	.option('-m, --max <value>', 'Maximum number of results', 10)
-	.action(async ({ fromAddress, toAddress }) => {
-		depot.clearedDeposits({ fromAddress, toAddress }).then(console.log);
+	.action(async ({ max, fromAddress, toAddress }) => {
+		depot
+			.clearedDeposits({ max, fromAddress, toAddress })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -28,7 +45,10 @@ program
 	.option('-f, --from <value>', 'A from address')
 	.option('-m, --max <value>', 'Maximum number of results', 10)
 	.action(async ({ max, from }) => {
-		depot.exchanges({ max, from }).then(console.log);
+		depot
+			.exchanges({ max, from })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program.command('exchanges.total').action(async () => {
@@ -40,7 +60,10 @@ program
 	.option('-t, --timeSeries <value>', 'The type of timeSeries - 1d, 15m', '1d')
 	.option('-m, --max <value>', 'Maximum number of results', 30)
 	.action(async ({ timeSeries, max }) => {
-		exchanges.aggregate({ timeSeries, max }).then(console.log);
+		exchanges
+			.aggregate({ timeSeries, max })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -172,7 +195,10 @@ program
 	.option('-m, --max <value>', 'Maximum number of results', 100)
 	.option('-s, --synth <value>', 'Synth code')
 	.action(async ({ synth, from, to, max }) => {
-		synths.transfers({ synth, from, to, max }).then(console.log);
+		synths
+			.transfers({ synth, from, to, max })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -186,7 +212,8 @@ program
 		synths
 			.holders({ max, address, addressesOnly, synth })
 			.then(results => (addressesOnly ? results.map(({ address }) => address) : results))
-			.then(results => console.log(json ? JSON.stringify(results, null, 2) : results));
+			.then(logResults({ json }))
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -194,7 +221,10 @@ program
 	.option('-t, --timeSeries <value>', 'The type of timeSeries - 1d, 15m', '1d')
 	.option('-m, --max <value>', 'Maximum number of results', 30)
 	.action(async ({ timeSeries, max }) => {
-		rate.snxAggregate({ timeSeries, max }).then(console.log);
+		rate
+			.snxAggregate({ timeSeries, max })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -209,20 +239,30 @@ program
 	.action(async ({ max, synth, minBlock, maxBlock, minTimestamp, maxTimestamp, json }) => {
 		rate
 			.updates({ max, synth, minBlock, maxBlock, minTimestamp, maxTimestamp })
-			.then(results => console.log(json ? JSON.stringify(results, null, 2) : results));
+			.then(logResults({ json }))
+			.then(showResultCount({ max }));
 	});
 
 program
 	.command('snx.holders')
 	.option('-a, --address <value>', 'Address to filter on, if any')
 	.option('-m, --max <value>', 'Maximum number of results', 100)
+	.option('-x, --max-collateral <value>', 'Maximum amount of collateral (input will have 18 decimals added)')
+	.option('-n, --min-collateral <value>', 'Minimum amount of collateral (input will have 18 decimals added)')
 	.option('-o, --addresses-only', 'Show addresses only')
 	.option('-j, --json', 'Whether or not to display the results as JSON')
-	.action(async ({ max, addressesOnly, address, json }) => {
+	.action(async ({ max, addressesOnly, address, maxCollateral, minCollateral, json }) => {
 		snx
-			.holders({ max, address, addressesOnly })
+			.holders({
+				max,
+				address,
+				addressesOnly,
+				minCollateral: minCollateral ? minCollateral * 1e18 : undefined,
+				maxCollateral: maxCollateral ? maxCollateral * 1e18 : undefined,
+			})
 			.then(results => (addressesOnly ? results.map(({ address }) => address) : results))
-			.then(results => console.log(json ? JSON.stringify(results, null, 2) : results));
+			.then(logResults({ json }))
+			.then(showResultCount({ max }));
 	});
 
 program.command('snx.total').action(async () => {
@@ -233,7 +273,10 @@ program
 	.command('snx.aggregateActiveStakers')
 	.option('-m, --max <value>', 'Maximum number of results', 30)
 	.action(async ({ max }) => {
-		snx.aggregateActiveStakers({ max }).then(console.log);
+		snx
+			.aggregateActiveStakers({ max })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program.command('snx.totalActiveStakers').action(async () => {
@@ -246,7 +289,10 @@ program
 	.option('-t, --to <value>', 'A to address')
 	.option(',m, --max <value>', 'Maximum number of results', 100)
 	.action(async ({ from, to, max }) => {
-		snx.transfers({ from, to, max }).then(console.log);
+		snx
+			.transfers({ from, to, max })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -259,7 +305,8 @@ program
 		snx
 			.rewards({ max })
 			.then(results => (addressesOnly ? results.map(({ address }) => address) : results))
-			.then(results => console.log(json ? JSON.stringify(results, null, 2) : results));
+			.then(logResults({ json }))
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -269,7 +316,10 @@ program
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)
 
 	.action(async ({ minBlock, max, account }) => {
-		snx.burned({ minBlock, max, account }).then(console.log);
+		snx
+			.burned({ minBlock, max, account })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -279,7 +329,10 @@ program
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)
 
 	.action(async ({ minBlock, max, account }) => {
-		snx.issued({ minBlock, max, account }).then(console.log);
+		snx
+			.issued({ minBlock, max, account })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -288,7 +341,10 @@ program
 	.option('-m, --max <value>', 'Maximum number of results', 100)
 
 	.action(async ({ max, account }) => {
-		snx.feesClaimed({ max, account }).then(console.log);
+		snx
+			.feesClaimed({ max, account })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -299,7 +355,10 @@ program
 	.option('-a, --account <value>', 'Account to filter on, if any')
 
 	.action(async ({ account, max, minBlock, maxBlock }) => {
-		snx.debtSnapshot({ account, max, minBlock, maxBlock }).then(console.log);
+		snx
+			.debtSnapshot({ account, max, minBlock, maxBlock })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -311,7 +370,10 @@ program
 	.option('-T, --maxTimestamp <value>', 'The youngest timestamp to include, if any')
 
 	.action(async ({ max, creator, isOpen, minTimestamp, maxTimestamp }) => {
-		binaryOptions.markets({ max, creator, isOpen }).then(console.log);
+		binaryOptions
+			.markets({ max, creator, isOpen, minTimestamp, maxTimestamp })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -321,7 +383,10 @@ program
 	.option('-a, --account <value>', 'The account address')
 
 	.action(async ({ max, type, market, account }) => {
-		binaryOptions.optionTransactions({ max, type, market, account }).then(console.log);
+		binaryOptions
+			.optionTransactions({ max, type, market, account })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -330,7 +395,10 @@ program
 	.option('-a, --account <value>', 'The account address')
 
 	.action(async ({ max, account }) => {
-		binaryOptions.marketsBidOn({ max, account }).then(console.log);
+		binaryOptions
+			.marketsBidOn({ max, account })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -341,7 +409,10 @@ program
 	.option('-T, --maxTimestamp <value>', 'The youngest timestamp to include, if any')
 
 	.action(async ({ max, market, minTimestamp, maxTimestamp }) => {
-		binaryOptions.historicalOptionPrice({ max, market, minTimestamp, maxTimestamp }).then(console.log);
+		binaryOptions
+			.historicalOptionPrice({ max, market, minTimestamp, maxTimestamp })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -351,7 +422,10 @@ program
 	.option('-o, --is-open <value>', 'If the loan is open or closed')
 
 	.action(async ({ max, account, isOpen }) => {
-		etherCollateral.loans({ max, account, isOpen }).then(console.log);
+		etherCollateral
+			.loans({ max, account, isOpen })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -360,7 +434,10 @@ program
 	.option('-a, --account <value>', 'Account to filter on, if any')
 
 	.action(async ({ max, account }) => {
-		limitOrders.orders({ max, account }).then(console.log);
+		limitOrders
+			.orders({ max, account })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -369,7 +446,10 @@ program
 	.option('-f, --from <value>', 'A from address')
 
 	.action(async ({ max, from }) => {
-		exchanger.exchangeEntriesSettled({ max, from }).then(console.log);
+		exchanger
+			.exchangeEntriesSettled({ max, from })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program.command('exchanges.observe').action(async () => {
