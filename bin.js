@@ -245,7 +245,7 @@ program
 
 program
 	.command('rate.dailyRateChange')
-	.option('-s, --synths <value>', 'List of synth codes')
+	.option('-s, --synths [value...]', 'specify synths')
 	.action(async ({ synths }) => {
 		rate.dailyRateChange({ synths }).then(console.log);
 	});
