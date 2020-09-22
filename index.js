@@ -530,45 +530,50 @@ module.exports = {
 				)
 				.catch(err => console.error(err));
 		},
-		dailyRateChange({ synths = [] }) {
-			return synths.reduce(async (synthRateList, synth) => {
-				const latestRate = await pageResults({
-					api: graphAPIEndpoints.rates,
-					max: 1,
-					query: {
-						entity: 'latestRates',
-						selection: {
-							where: {
-								synth: `\\"${synth}\\"`,
+		dailyRateChange({ synths = [], max = 3000 }) {
+			return pageResults({
+				api: graphAPIEndpoints.rates,
+				max,
+				query: {
+					entity: 'latestRates',
+					properties: ['id', 'rate'],
+				},
+			})
+			  .then(latestRates => {
+					const filteredRates = latestRates.filter(latestRate => synths.includes(latestRate.id))
+					const promises = []
+
+					const dayDate = new Date();
+					dayDate.setDate(dayDate.getDate() - 1);
+					const timestamp = roundTimestampTenSeconds(parseInt(dayDate.getTime() / 1000));
+
+					for (let i = 0; i < filteredRates.length; i++) {
+					  promises.push(pageResults({
+							api: graphAPIEndpoints.rates,
+							max: 1,
+							query: {
+								entity: 'rateUpdates',
+								selection: {
+									orderBy: 'timestamp',
+									orderDirection: 'desc',
+									where: {
+										synth: `\\"${latestRates[i].id}\\"`,
+										timestamp_lte: timestamp,
+									},
+								},
+								properties: ['rate'],
 							},
-						},
-						properties: ['rate'],
-					},
-				});
-				const dayDate = new Date();
-				dayDate.setDate(dayDate.getDate() - 1);
-				const timestamp = roundTimestampTenSeconds(parseInt(dayDate.getTime() / 1000));
-				const dayOldRate = await pageResults({
-					api: graphAPIEndpoints.rates,
-					max: 1,
-					query: {
-						entity: 'rateUpdates',
-						selection: {
-							orderBy: 'timestamp',
-							orderDirection: 'desc',
-							where: {
-								synth: `\\"${synth}\\"`,
-								timestamp_lte: timestamp,
-							},
-						},
-						properties: ['rate'],
-					},
-				});
-				if (latestRate.length > 0 && latestRate[0].rate && dayOldRate.length > 0 && dayOldRate[0].rate) {
-					synthRateList.push({ synth, dailyRateChange: latestRate[0].rate / dayOldRate[0].rate });
+						}));
+					}
+					return Promise.all(promises).then(dayOldRates => {
+						return dayOldRates.map((oldRate, index) => {
+							return {
+								synth: filteredRates[index].id,
+								'24HRChange': filteredRates[index].rate / oldRate.rate,
+							}
+						})
+					})
 				}
-				return synthRateList;
-			}, Promise.resolve([]));
 		},
 		observe({ minTimestamp = Math.round(Date.now() / 1000) } = {}) {
 			const client = new SubscriptionClient(
