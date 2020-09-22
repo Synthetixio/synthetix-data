@@ -257,8 +257,8 @@ program
 				max,
 				address,
 				addressesOnly,
-				minCollateral: minCollateral ? minCollateral * 1e18 : undefined,
-				maxCollateral: maxCollateral ? maxCollateral * 1e18 : undefined,
+				minCollateral,
+				maxCollateral,
 			})
 			.then(results => (addressesOnly ? results.map(({ address }) => address) : results))
 			.then(logResults({ json }))

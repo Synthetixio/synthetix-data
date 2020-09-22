@@ -674,8 +674,8 @@ module.exports = {
 						orderDirection: 'desc',
 						where: {
 							id: address ? `\\"${address}\\"` : undefined,
-							collateral_lte: maxCollateral ? `\\"${maxCollateral}\\"` : undefined,
-							collateral_gte: minCollateral ? `\\"${minCollateral}\\"` : undefined,
+							collateral_lte: maxCollateral ? `\\"${maxCollateral + '0'.repeat(18)}\\"` : undefined,
+							collateral_gte: minCollateral ? `\\"${minCollateral + '0'.repeat(18)}\\"` : undefined,
 						},
 					},
 					properties: [
