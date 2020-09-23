@@ -247,7 +247,10 @@ program
 	.command('rate.dailyRateChange')
 	.option('-s, --synths [value...]', 'specify synths')
 	.action(async ({ synths }) => {
-		rate.dailyRateChange({ synths }).then(console.log);
+		rate
+			.dailyRateChange({ synths })
+			.then(logResults())
+			.then(showResultCount({ max: 'n/a' }));
 	});
 
 program
