@@ -552,8 +552,8 @@ module.exports = {
 					dayDate.setDate(dayDate.getDate() - 1);
 					const timestamp = roundTimestampTenSeconds(parseInt(dayDate.getTime() / 1000));
 
-					for (let i = 0; i < filteredRates.length; i++) {
-						promises.push(
+					return Promise.all(
+						filteredRates.map(async filteredRate =>
 							pageResults({
 								api: graphAPIEndpoints.rates,
 								max: 1,
@@ -563,16 +563,15 @@ module.exports = {
 										orderBy: 'timestamp',
 										orderDirection: 'desc',
 										where: {
-											synth: `\\"${filteredRates[i].id}\\"`,
+											synth: `\\"${filteredRate.id}\\"`,
 											timestamp_lte: timestamp,
 										},
 									},
 									properties: ['rate', 'synth'],
 								},
 							}),
-						);
-					}
-					return Promise.all(promises).then(dayOldRates => {
+						),
+					).then(dayOldRates => {
 						return dayOldRates.map((oldRate, index) => {
 							return {
 								synth: filteredRates[index].id,
