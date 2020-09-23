@@ -530,6 +530,58 @@ module.exports = {
 				)
 				.catch(err => console.error(err));
 		},
+		dailyRateChange({ synths = [], max = 100 }) {
+			const IGNORE_SYNTHS = ['XDR', 'XDRB', 'nUSD', 'sUSD'];
+			return pageResults({
+				api: graphAPIEndpoints.rates,
+				max,
+				query: {
+					entity: 'latestRates',
+					properties: ['id', 'rate'],
+				},
+			})
+				.then(latestRates => {
+					let filteredRates = latestRates.filter(latestRate => !IGNORE_SYNTHS.includes(latestRate.id));
+					if (synths.length > 0) {
+						filteredRates = latestRates.filter(latestRate => synths.includes(latestRate.id));
+					}
+
+					const promises = [];
+
+					const dayDate = new Date();
+					dayDate.setDate(dayDate.getDate() - 1);
+					const timestamp = roundTimestampTenSeconds(parseInt(dayDate.getTime() / 1000));
+
+					return Promise.all(
+						filteredRates.map(async filteredRate =>
+							pageResults({
+								api: graphAPIEndpoints.rates,
+								max: 1,
+								query: {
+									entity: 'rateUpdates',
+									selection: {
+										orderBy: 'timestamp',
+										orderDirection: 'desc',
+										where: {
+											synth: `\\"${filteredRate.id}\\"`,
+											timestamp_lte: timestamp,
+										},
+									},
+									properties: ['rate', 'synth'],
+								},
+							}),
+						),
+					).then(dayOldRates => {
+						return dayOldRates.map((oldRate, index) => {
+							return {
+								synth: filteredRates[index].id,
+								'24HRChange': Number(filteredRates[index].rate) / Number(oldRate[0].rate) - 1,
+							};
+						});
+					});
+				})
+				.catch(err => console.error(err));
+		},
 		observe({ minTimestamp = Math.round(Date.now() / 1000) } = {}) {
 			const client = new SubscriptionClient(
 				graphWSEndpoints.rates,
