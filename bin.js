@@ -256,12 +256,14 @@ program
 program
 	.command('snx.holders')
 	.option('-a, --address <value>', 'Address to filter on, if any')
+	.option('-c, --min-claims <value>', 'Minimum number of claims')
+	.option('-i, --min-mints <value>', 'Minimum number of mints')
+	.option('-j, --json', 'Whether or not to display the results as JSON')
 	.option('-m, --max <value>', 'Maximum number of results', 100)
-	.option('-x, --max-collateral <value>', 'Maximum amount of collateral (input will have 18 decimals added)')
 	.option('-n, --min-collateral <value>', 'Minimum amount of collateral (input will have 18 decimals added)')
 	.option('-o, --addresses-only', 'Show addresses only')
-	.option('-j, --json', 'Whether or not to display the results as JSON')
-	.action(async ({ max, addressesOnly, address, maxCollateral, minCollateral, json }) => {
+	.option('-x, --max-collateral <value>', 'Maximum amount of collateral (input will have 18 decimals added)')
+	.action(async ({ max, addressesOnly, address, maxCollateral, minCollateral, json, minMints, minClaims }) => {
 		snx
 			.holders({
 				max,
@@ -269,6 +271,8 @@ program
 				addressesOnly,
 				minCollateral,
 				maxCollateral,
+				minMints,
+				minClaims,
 			})
 			.then(results => (addressesOnly ? results.map(({ address }) => address) : results))
 			.then(logResults({ json }))

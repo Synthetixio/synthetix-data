@@ -546,8 +546,6 @@ module.exports = {
 						filteredRates = latestRates.filter(latestRate => synths.includes(latestRate.id));
 					}
 
-					const promises = [];
-
 					const dayDate = new Date();
 					dayDate.setDate(dayDate.getDate() - 1);
 					const timestamp = roundTimestampTenSeconds(parseInt(dayDate.getTime() / 1000));
@@ -715,7 +713,14 @@ module.exports = {
 				.catch(err => console.error(err));
 		},
 
-		holders({ max = 100, maxCollateral = undefined, minCollateral = undefined, address = undefined } = {}) {
+		holders({
+			max = 100,
+			maxCollateral = undefined,
+			minCollateral = undefined,
+			address = undefined,
+			minMints = undefined,
+			minClaims = undefined,
+		} = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.snx,
 				max,
@@ -725,9 +730,11 @@ module.exports = {
 						orderBy: 'collateral',
 						orderDirection: 'desc',
 						where: {
-							id: address ? `\\"${address}\\"` : undefined,
+							id: address ? `\\"${address.toLowerCase()}\\"` : undefined,
 							collateral_lte: maxCollateral ? `\\"${maxCollateral + '0'.repeat(18)}\\"` : undefined,
 							collateral_gte: minCollateral ? `\\"${minCollateral + '0'.repeat(18)}\\"` : undefined,
+							mints_gte: minMints || undefined,
+							claims_gte: minClaims || undefined,
 						},
 					},
 					properties: [
@@ -739,6 +746,8 @@ module.exports = {
 						'transferable', // All non-locked SNX
 						'initialDebtOwnership', // Debt data from SynthetixState, used to calculate debtBalance
 						'debtEntryAtIndex', // Debt data from SynthetixState, used to calculate debtBalance
+						'claims', // Total number of claims ever performed
+						'mints', // Total number of mints ever performed (issuance of sUSD)
 					],
 				},
 			})
@@ -753,6 +762,8 @@ module.exports = {
 							transferable,
 							initialDebtOwnership,
 							debtEntryAtIndex,
+							mints,
+							claims,
 						}) => ({
 							address: id,
 							block: Number(block),
@@ -764,6 +775,8 @@ module.exports = {
 							// Use 1e27 as the below entries are high precision decimals (see SafeDecimalMath.sol in @Synthetixio/synthetix)
 							initialDebtOwnership: initialDebtOwnership ? initialDebtOwnership / 1e27 : null,
 							debtEntryAtIndex: debtEntryAtIndex ? debtEntryAtIndex / 1e27 : null,
+							mints: mints !== null ? +mints : 0,
+							claims: claims !== null ? +claims : 0,
 						}),
 					),
 				)
