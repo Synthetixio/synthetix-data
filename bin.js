@@ -184,9 +184,17 @@ program
 		}
 	});
 
-program.command('synths.issuers').action(async () => {
-	synths.issuers().then(console.log);
-});
+program
+	.command('synths.issuers')
+	.option('-m, --max <value>', 'Maximum number of results', 100)
+	.option('-j, --json', 'Whether or not to display the results as JSON')
+
+	.action(async ({ max, json }) => {
+		synths
+			.issuers({ max })
+			.then(logResults({ json }))
+			.then(showResultCount({ max }));
+	});
 
 program
 	.command('synths.transfers')
