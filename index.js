@@ -530,9 +530,8 @@ module.exports = {
 				)
 				.catch(err => console.error(err));
 		},
-		dailyRateChange({ synths = [], fromBlock }) {
+		dailyRateChange({ synths = [], max = 100, fromBlock }) {
 			const IGNORE_SYNTHS = ['XDR', 'XDRB', 'nUSD', 'sUSD'];
-			const max = synths.length > 0 ? synths.length : 100;
 			return pageResults({
 				api: graphAPIEndpoints.rates,
 				max,
