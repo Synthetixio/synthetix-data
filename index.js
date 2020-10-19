@@ -537,6 +537,11 @@ module.exports = {
 				api: graphAPIEndpoints.rates,
 				max,
 				query: {
+					selection: {
+						block: {
+							number: Number(fromBlock),
+						},
+					},
 					entity: 'latestRates',
 					properties: ['id', 'rate'],
 				},
@@ -559,12 +564,12 @@ module.exports = {
 					return pageResults({
 						api: graphAPIEndpoints.rates,
 						max,
-						selection: {
-							block: {
-								number: dayOldBlock,
-							},
-						},
 						query: {
+							selection: {
+								block: {
+									number: dayOldBlock,
+								},
+							},
 							entity: 'latestRates',
 							properties: ['id', 'rate'],
 						},
