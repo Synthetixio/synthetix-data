@@ -600,6 +600,18 @@ program
 			.then(showResultCount({ max }));
 	});
 
+program
+	.command('exchanger.exchangeSourceData')
+	.option('-t, --timeSeries <value>', 'The type of timeSeries - 7d, 30d, 1mo, 365d, 12mo, 1y', '1mo')
+	.option('-p, --partner <value>', 'Partner to filter on, if any')
+
+	.action(async ({ timeSeries, partner }) => {
+		exchanger
+			.exchangeSourceData({ timeSeries, partner })
+			.then(logResults())
+			.then(showResultCount({ max: 'n/a' }));
+	});
+
 program.command('exchanges.observe').action(async () => {
 	exchanges.observe().subscribe({
 		next(val) {
