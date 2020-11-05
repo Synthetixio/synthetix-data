@@ -1,7 +1,7 @@
 {
 	"name": "synthetix-data",
 	"license": "MIT",
-	"version": "2.1.26-1",
+	"version": "2.1.33",
 	"author": "Synthetix",
 	"main": "index.js",
 	"browser": "browser.js",
@@ -14,7 +14,7 @@
 		"prepublish": "npm run pack"
 	},
 	"dependencies": {
-		"commander": "2.20.0",
+		"commander": "6.1.0",
 		"csv-stringify": "5.3.3",
 		"graph-results-pager": "~1.0.0",
 		"graphql": "14.5.8",

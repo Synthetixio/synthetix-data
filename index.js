@@ -35,6 +35,8 @@ const hexToAscii = str => {
 	return out;
 };
 
+const roundTimestampTenSeconds = timestamp => Math.round(timestamp / 10) * 10;
+
 module.exports = {
 	pageResults,
 	graphAPIEndpoints,
@@ -69,7 +71,7 @@ module.exports = {
 						date: new Date(timestamp * 1000),
 					})),
 				)
-				.catch(err => console.error(err));
+				.catch(err => console.log(err));
 		},
 		clearedDeposits({ network = 'mainnet', fromAddress = undefined, toAddress = undefined, max = 100 }) {
 			return pageResults({
@@ -271,8 +273,8 @@ module.exports = {
 						orderDirection: 'desc',
 						where: {
 							network: `\\"${network}\\"`,
-							timestamp_gte: minTimestamp || undefined,
-							timestamp_lte: maxTimestamp || undefined,
+							timestamp_gte: roundTimestampTenSeconds(minTimestamp) || undefined,
+							timestamp_lte: roundTimestampTenSeconds(maxTimestamp) || undefined,
 							block_gte: minBlock || undefined,
 							block_lte: maxBlock || undefined,
 							from: fromAddress ? `\\"${fromAddress}\\"` : undefined,
@@ -439,29 +441,22 @@ module.exports = {
 						orderBy: 'balanceOf',
 						orderDirection: 'desc',
 						where: {
-							account: address ? `\\"${address}\\"` : undefined,
-							source: synth ? `\\"${synth}\\"` : undefined,
+							id: address && synth ? `\\"${address + '-' + synth}\\"` : undefined,
+							synth: synth ? `\\"${synth}\\"` : undefined,
 						},
 					},
 					properties: [
-						'id',
-						'account', // the address of the holder
-						'block', // the block this entity was last updated in
-						'timestamp', // the timestamp when this entity was last updated
+						'id', // the address of the holder plus the synth
 						'balanceOf', // synth balance in their wallet
-						'source', // The synth currencyKey
+						'synth', // The synth currencyKey
 					],
 				},
 			})
 				.then(results =>
-					results.map(({ id, account, block, timestamp, balanceOf, source }) => ({
-						hash: id.split('-')[0],
-						address: account,
-						block: Number(block),
-						timestamp: Number(timestamp * 1000),
-						date: new Date(timestamp * 1000),
+					results.map(({ id, balanceOf, synth }) => ({
+						address: id.split('-')[0],
 						balanceOf: balanceOf ? balanceOf / 1e18 : null,
-						source,
+						synth,
 					})),
 				)
 				.catch(err => console.error(err));
@@ -516,8 +511,8 @@ module.exports = {
 								: undefined, // ignore non-synth prices
 							block_gte: minBlock || undefined,
 							block_lte: maxBlock || undefined,
-							timestamp_gte: minTimestamp || undefined,
-							timestamp_lte: maxTimestamp || undefined,
+							timestamp_gte: roundTimestampTenSeconds(minTimestamp) || undefined,
+							timestamp_lte: roundTimestampTenSeconds(maxTimestamp) || undefined,
 						},
 					},
 					properties: ['id', 'synth', 'rate', 'block', 'timestamp'],
@@ -533,6 +528,56 @@ module.exports = {
 						rate: rate / 1e18,
 					})),
 				)
+				.catch(err => console.error(err));
+		},
+		dailyRateChange({ synths = [], max = 100 }) {
+			const IGNORE_SYNTHS = ['XDR', 'XDRB', 'nUSD', 'sUSD'];
+			return pageResults({
+				api: graphAPIEndpoints.rates,
+				max,
+				query: {
+					entity: 'latestRates',
+					properties: ['id', 'rate'],
+				},
+			})
+				.then(latestRates => {
+					let filteredRates = latestRates.filter(latestRate => !IGNORE_SYNTHS.includes(latestRate.id));
+					if (synths.length > 0) {
+						filteredRates = latestRates.filter(latestRate => synths.includes(latestRate.id));
+					}
+
+					const dayDate = new Date();
+					dayDate.setDate(dayDate.getDate() - 1);
+					const timestamp = roundTimestampTenSeconds(parseInt(dayDate.getTime() / 1000));
+
+					return Promise.all(
+						filteredRates.map(async filteredRate =>
+							pageResults({
+								api: graphAPIEndpoints.rates,
+								max: 1,
+								query: {
+									entity: 'rateUpdates',
+									selection: {
+										orderBy: 'timestamp',
+										orderDirection: 'desc',
+										where: {
+											synth: `\\"${filteredRate.id}\\"`,
+											timestamp_lte: timestamp,
+										},
+									},
+									properties: ['rate', 'synth'],
+								},
+							}),
+						),
+					).then(dayOldRates => {
+						return dayOldRates.map((oldRate, index) => {
+							return {
+								synth: filteredRates[index].id,
+								'24HRChange': Number(filteredRates[index].rate) / Number(oldRate[0].rate) - 1,
+							};
+						});
+					});
+				})
 				.catch(err => console.error(err));
 		},
 		observe({ minTimestamp = Math.round(Date.now() / 1000) } = {}) {
@@ -640,7 +685,42 @@ module.exports = {
 				.catch(err => console.error(err));
 		},
 
-		holders({ max = 100, address = undefined } = {}) {
+		aggregateActiveStakers({ max = 30 } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.snx,
+				max,
+				query: {
+					entity: 'totalDailyActiveStakers',
+					selection: {
+						orderBy: 'id',
+						orderDirection: 'desc',
+					},
+					properties: ['id', 'count'],
+				},
+			}).catch(err => console.error(err));
+		},
+
+		totalActiveStakers() {
+			return pageResults({
+				api: graphAPIEndpoints.snx,
+				max: 1,
+				query: {
+					entity: 'totalActiveStakers',
+					properties: ['count'],
+				},
+			})
+				.then(([{ count }]) => ({ count }))
+				.catch(err => console.error(err));
+		},
+
+		holders({
+			max = 100,
+			maxCollateral = undefined,
+			minCollateral = undefined,
+			address = undefined,
+			minMints = undefined,
+			minClaims = undefined,
+		} = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.snx,
 				max,
@@ -650,7 +730,11 @@ module.exports = {
 						orderBy: 'collateral',
 						orderDirection: 'desc',
 						where: {
-							id: address ? `\\"${address}\\"` : undefined,
+							id: address ? `\\"${address.toLowerCase()}\\"` : undefined,
+							collateral_lte: maxCollateral ? `\\"${maxCollateral + '0'.repeat(18)}\\"` : undefined,
+							collateral_gte: minCollateral ? `\\"${minCollateral + '0'.repeat(18)}\\"` : undefined,
+							mints_gte: minMints || undefined,
+							claims_gte: minClaims || undefined,
 						},
 					},
 					properties: [
@@ -662,6 +746,8 @@ module.exports = {
 						'transferable', // All non-locked SNX
 						'initialDebtOwnership', // Debt data from SynthetixState, used to calculate debtBalance
 						'debtEntryAtIndex', // Debt data from SynthetixState, used to calculate debtBalance
+						'claims', // Total number of claims ever performed
+						'mints', // Total number of mints ever performed (issuance of sUSD)
 					],
 				},
 			})
@@ -676,6 +762,8 @@ module.exports = {
 							transferable,
 							initialDebtOwnership,
 							debtEntryAtIndex,
+							mints,
+							claims,
 						}) => ({
 							address: id,
 							block: Number(block),
@@ -687,6 +775,8 @@ module.exports = {
 							// Use 1e27 as the below entries are high precision decimals (see SafeDecimalMath.sol in @Synthetixio/synthetix)
 							initialDebtOwnership: initialDebtOwnership ? initialDebtOwnership / 1e27 : null,
 							debtEntryAtIndex: debtEntryAtIndex ? debtEntryAtIndex / 1e27 : null,
+							mints: mints !== null ? +mints : 0,
+							claims: claims !== null ? +claims : 0,
 						}),
 					),
 				)
@@ -849,7 +939,13 @@ module.exports = {
 		},
 	},
 	binaryOptions: {
-		markets({ max = 100, creator = undefined, isOpen = undefined } = {}) {
+		markets({
+			max = 100,
+			creator = undefined,
+			isOpen = undefined,
+			minTimestamp = undefined,
+			maxTimestamp = undefined,
+		} = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.binaryOptions,
 				max,
@@ -861,6 +957,8 @@ module.exports = {
 						where: {
 							creator: creator ? `\\"${creator}\\"` : undefined,
 							isOpen: isOpen !== undefined ? isOpen : undefined,
+							timestamp_gte: minTimestamp || undefined,
+							timestamp_lte: maxTimestamp || undefined,
 						},
 					},
 					properties: [
