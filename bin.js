@@ -386,6 +386,41 @@ program
 	});
 
 program
+	.command('snx.accountsFlaggedForLiquidation')
+	.option('-t, --minDeadline <value>', 'change this value to get historical data', Math.round(Date.now() / 1000))
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-a, --account <value>', 'Account to filter on, if any')
+
+	.action(async ({ account, minDeadline, max }) => {
+		snx
+			.debtSnapshot({ account, minDeadline, max })
+			.then(logResults())
+			.then(showResultCount({ max: 'n/a' }));
+	});
+
+program
+	.command('snx.accountsRemovedFromLiquidation')
+	.option(
+		'-T, --maxTime <value>',
+		'this defaults to the current time to capture any actively flagged accounts that have been fixed',
+		Math.round(Date.now() / 1000),
+	)
+	.option(
+		'-t, --minTime <value>',
+		'this defaults to 3 days ago to ONLY capture any actively flagged accounts that have been fixed',
+		Math.round((Date.now() - 86400 * 1000 * 3) / 1000),
+	)
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-a, --account <value>', 'Account to filter on, if any')
+
+	.action(async ({ account, minTime, maxTime, max }) => {
+		snx
+			.debtSnapshot({ account, minTime, maxTime, max })
+			.then(logResults())
+			.then(showResultCount({ max: 'n/a' }));
+	});
+
+program
 	.command('binaryOptions.markets')
 	.option('-m, --max <value>', 'Maximum number of results', 100)
 	.option('-c, --creator <value>', 'The address of the market creator')

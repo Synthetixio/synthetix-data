@@ -943,6 +943,67 @@ module.exports = {
 				)
 				.catch(err => console.error(err));
 		},
+		accountsFlaggedForLiquidation({
+			minDeadline = Math.round(Date.now() / 1000),
+			account = undefined,
+			max = 5000,
+		} = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.snx,
+				max,
+				query: {
+					entity: 'accountsFlaggedForLiquidations',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'asc',
+						where: {
+							account: account ? `\\"${account}\\"` : undefined,
+							deadline_gte: roundTimestampTenSeconds(minDeadline) || undefined,
+						},
+					},
+					properties: ['id', 'deadline', 'account', 'collateralRatio', 'liquidatableNonEscrowSNX'],
+				},
+			}).then(results =>
+				results.map(({ id, deadline, account, collateralRatio, liquidatableNonEscrowSNX }) => ({
+					id,
+					deadline: Number(deadline * 1000),
+					account,
+					collateralRatio: collateralRatio / 1e18,
+					liquidatableNonEscrowSNX: liquidatableNonEscrowSNX / 1e18,
+				})),
+			);
+		},
+		accountsRemovedFromLiquidation({
+			maxTime = Math.round(Date.now() / 1000),
+			// three days ago
+			minTime = Math.round((Date.now() - 86400 * 1000 * 3) / 1000),
+			account = undefined,
+			max = 5000,
+		} = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.snx,
+				max,
+				query: {
+					entity: 'accountsRemovedFromLiquidations',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'asc',
+						where: {
+							account: account ? `\\"${account}\\"` : undefined,
+							time_gte: roundTimestampTenSeconds(minTime) || undefined,
+							time_lte: roundTimestampTenSeconds(maxTime) || undefined,
+						},
+					},
+					properties: ['id', 'time', 'account'],
+				},
+			}).then(results =>
+				results.map(({ id, time, account }) => ({
+					id,
+					time: Number(time * 1000),
+					account,
+				})),
+			);
+		},
 	},
 	binaryOptions: {
 		markets({
