@@ -442,6 +442,7 @@ program
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)
 	.option('-a, --account <value>', 'Account to filter on, if any')
 	.option('-o, --is-open <value>', 'If the loan is open or closed')
+	.option('-c, --collateral-minted <value>', 'The collateral minted for the loan')
 
 	.action(async ({ max, account, isOpen, collateralMinted }) => {
 		etherCollateral
