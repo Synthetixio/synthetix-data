@@ -1094,7 +1094,7 @@ module.exports = {
 		},
 	},
 	etherCollateral: {
-		loans({ max = Infinity, isOpen = undefined, account = undefined } = {}) {
+		loans({ max = Infinity, isOpen = undefined, account = undefined, collateralMinted = undefined } = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.etherCollateral,
 				max,
@@ -1105,20 +1105,100 @@ module.exports = {
 						orderDirection: 'desc',
 						where: {
 							account: account ? `\\"${account}\\"` : undefined,
+							collateralMinted: collateralMinted ? `\\"${collateralMinted}\\"` : undefined,
 							isOpen,
 						},
 					},
-					properties: ['id', 'account', 'amount', 'isOpen', 'createdAt', 'closedAt'],
+					properties: [
+						'id',
+						'account',
+						'amount',
+						'isOpen',
+						'createdAt',
+						'closedAt',
+						'txHash',
+						'hasPartialLiquidations',
+						'collateralMinted',
+					],
 				},
 			})
 				.then(results =>
-					results.map(({ id, account, amount, isOpen, createdAt, closedAt }) => ({
-						id: Number(id),
+					results.map(
+						({
+							id,
+							account,
+							amount,
+							isOpen,
+							createdAt,
+							closedAt,
+							txHash,
+							hasPartialLiquidations,
+							collateralMinted,
+						}) => ({
+							id: Number(id.split('-')[0]),
+							account,
+							createdAt: new Date(Number(createdAt * 1000)),
+							closedAt: closedAt ? new Date(Number(closedAt * 1000)) : null,
+							amount: amount / 1e18,
+							isOpen,
+							txHash,
+							hasPartialLiquidations,
+							collateralMinted,
+						}),
+					),
+				)
+				.catch(err => console.error(err));
+		},
+		partiallyLiquidatedLoans({ max = Infinity, account = undefined, loanId = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.etherCollateral,
+				max,
+				query: {
+					entity: 'loanPartiallyLiquidateds',
+					selection: {
+						where: {
+							loanId: loanId ? `\\"${loanId}\\"` : undefined,
+							account: account ? `\\"${account}\\"` : undefined,
+						},
+					},
+					properties: ['account', 'liquidatedAmount', 'liquidator', 'liquidatedCollateral', 'loanId', 'id'],
+				},
+			})
+				.then(results =>
+					results.map(({ account, liquidatedAmount, liquidator, liquidatedCollateral, loanId, id }) => ({
+						loanId: Number(loanId),
+						txHash: id.split('-')[0],
+						liquidatedCollateral: liquidatedCollateral / 1e18,
+						penaltyAmount: (liquidatedCollateral / 1e18) * 0.1,
+						liquidator,
+						liquidatedAmount: liquidatedAmount / 1e18,
 						account,
-						createdAt: new Date(Number(createdAt * 1000)),
-						closedAt: closedAt ? new Date(Number(closedAt * 1000)) : null,
-						amount: amount / 1e18,
-						isOpen,
+					})),
+				)
+				.catch(err => console.error(err));
+		},
+		liquidatedLoans({ max = Infinity, account = undefined, loanId = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.etherCollateral,
+				max,
+				query: {
+					entity: 'loanLiquidateds',
+					selection: {
+						where: {
+							loanId: loanId ? `\\"${loanId}\\"` : undefined,
+							account: account ? `\\"${account}\\"` : undefined,
+						},
+					},
+					properties: ['account', 'liquidator', 'loanId', 'id', 'timestamp'],
+				},
+			})
+				.then(results =>
+					results.map(({ account, liquidator, loanId, id, timestamp }) => ({
+						loanId: Number(loanId),
+						txHash: id.split('-')[0],
+						liquidator,
+						account,
+						timestamp: new Date(Number(timestamp * 1000)),
 					})),
 				)
 				.catch(err => console.error(err));
