@@ -442,10 +442,35 @@ program
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)
 	.option('-a, --account <value>', 'Account to filter on, if any')
 	.option('-o, --is-open <value>', 'If the loan is open or closed')
+	.option('-c, --collateral-minted <value>', 'The collateral minted for the loan')
 
-	.action(async ({ max, account, isOpen }) => {
+	.action(async ({ max, account, isOpen, collateralMinted }) => {
 		etherCollateral
-			.loans({ max, account, isOpen })
+			.loans({ max, account, isOpen, collateralMinted })
+			.then(logResults())
+			.then(showResultCount({ max }));
+	});
+
+program
+	.command('etherCollateral.partiallyLiquidatedLoans')
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-a, --account <value>', 'Account to filter on, if any')
+
+	.action(async ({ max, account }) => {
+		etherCollateral
+			.partiallyLiquidatedLoans({ max, account })
+			.then(logResults())
+			.then(showResultCount({ max }));
+	});
+
+program
+	.command('etherCollateral.liquidatedLoans')
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-a, --account <value>', 'Account to filter on, if any')
+
+	.action(async ({ max, account }) => {
+		etherCollateral
+			.liquidatedLoans({ max, account })
 			.then(logResults())
 			.then(showResultCount({ max }));
 	});
