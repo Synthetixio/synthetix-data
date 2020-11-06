@@ -393,9 +393,9 @@ program
 
 	.action(async ({ account, minDeadline, max }) => {
 		snx
-			.debtSnapshot({ account, minDeadline, max })
+			.accountsFlaggedForLiquidation({ account, minDeadline, max })
 			.then(logResults())
-			.then(showResultCount({ max: 'n/a' }));
+			.then(showResultCount({ max }));
 	});
 
 program
@@ -415,9 +415,21 @@ program
 
 	.action(async ({ account, minTime, maxTime, max }) => {
 		snx
-			.debtSnapshot({ account, minTime, maxTime, max })
+			.accountsRemovedFromLiquidation({ account, minTime, maxTime, max })
 			.then(logResults())
-			.then(showResultCount({ max: 'n/a' }));
+			.then(showResultCount({ max }));
+	});
+
+program
+	.command('snx.getActiveLiquidations')
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-a, --account <value>', 'Account to filter on, if any')
+
+	.action(async ({ account, max }) => {
+		snx
+			.getActiveLiquidations({ account, max })
+			.then(logResults())
+			.then(showResultCount({ max }));
 	});
 
 program

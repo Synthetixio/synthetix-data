@@ -1004,6 +1004,18 @@ module.exports = {
 				})),
 			);
 		},
+		getActiveLiquidations({ account = undefined, max = 5000 } = {}) {
+			return this.accountsFlaggedForLiquidation({ account, max }).then(flaggedResults =>
+				this.accountsRemovedFromLiquidation({ account, max }).then(removedResults =>
+					flaggedResults.reduce((acc, curr) => {
+						if (removedResults.findIndex(o => o.account === curr.account) === -1) {
+							acc.push(curr);
+						}
+						return acc;
+					}, []),
+				),
+			);
+		},
 	},
 	binaryOptions: {
 		markets({
