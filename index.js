@@ -944,7 +944,10 @@ module.exports = {
 				.catch(err => console.error(err));
 		},
 		accountsFlaggedForLiquidation({
-			minDeadline = Math.round(Date.now() / 1000),
+			// default check is past thirty days
+			minTime = Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+			// default check is 3 days from now
+			maxTime = Math.round((Date.now() + 86400 * 1000 * 3) / 1000),
 			account = undefined,
 			max = 5000,
 		} = {}) {
@@ -952,13 +955,14 @@ module.exports = {
 				api: graphAPIEndpoints.snx,
 				max,
 				query: {
-					entity: 'accountsFlaggedForLiquidations',
+					entity: 'accountFlaggedForLiquidations',
 					selection: {
 						orderBy: 'timestamp',
 						orderDirection: 'asc',
 						where: {
 							account: account ? `\\"${account}\\"` : undefined,
-							deadline_gte: roundTimestampTenSeconds(minDeadline) || undefined,
+							deadline_gte: roundTimestampTenSeconds(minTime) || undefined,
+							deadline_lte: roundTimestampTenSeconds(maxTime) || undefined,
 						},
 					},
 					properties: ['id', 'deadline', 'account', 'collateralRatio', 'liquidatableNonEscrowSNX'],
@@ -975,8 +979,8 @@ module.exports = {
 		},
 		accountsRemovedFromLiquidation({
 			maxTime = Math.round(Date.now() / 1000),
-			// three days ago
-			minTime = Math.round((Date.now() - 86400 * 1000 * 3) / 1000),
+			// default check is past thirty days
+			minTime = Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
 			account = undefined,
 			max = 5000,
 		} = {}) {
@@ -984,7 +988,7 @@ module.exports = {
 				api: graphAPIEndpoints.snx,
 				max,
 				query: {
-					entity: 'accountsRemovedFromLiquidations',
+					entity: 'accountRemovedFromLiquidations',
 					selection: {
 						orderBy: 'timestamp',
 						orderDirection: 'asc',
@@ -1004,8 +1008,49 @@ module.exports = {
 				})),
 			);
 		},
-		getActiveLiquidations({ account = undefined, max = 5000 } = {}) {
-			return this.accountsFlaggedForLiquidation({ account, max }).then(flaggedResults =>
+		accountsLiquidated({
+			maxTime = Math.round(Date.now() / 1000),
+			// default check is past thirty days
+			minTime = Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+			account = undefined,
+			max = 5000,
+		} = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.snx,
+				max,
+				query: {
+					entity: 'accountLiquidateds',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'asc',
+						where: {
+							account: account ? `\\"${account}\\"` : undefined,
+							time_gte: roundTimestampTenSeconds(minTime) || undefined,
+							time_lte: roundTimestampTenSeconds(maxTime) || undefined,
+						},
+					},
+					properties: ['id', 'time', 'account', 'liquidator', 'amountLiquidated', 'snxRedeemed'],
+				},
+			}).then(results =>
+				results.map(({ id, time, account, amountLiquidated, snxRedeemed }) => ({
+					id,
+					time: Number(time * 1000),
+					account,
+					liquidator,
+					amountLiquidated: amountLiquidated / 1e18,
+					snxRedeemed: snxRedeemed / 1e18,
+				})),
+			);
+		},
+		// WIP
+		getActiveLiquidations({
+			account = undefined,
+			max = 5000,
+			maxTime = Math.round(Date.now() / 1000),
+			// default check is past thirty days
+			minTime = Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+		} = {}) {
+			return this.accountsFlaggedForLiquidation({ account, max, maxTime, minTime }).then(flaggedResults =>
 				this.accountsRemovedFromLiquidation({ account, max }).then(removedResults =>
 					flaggedResults.reduce((acc, curr) => {
 						if (removedResults.findIndex(o => o.account === curr.account) === -1) {

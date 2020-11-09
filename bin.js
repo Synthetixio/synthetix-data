@@ -387,13 +387,22 @@ program
 
 program
 	.command('snx.accountsFlaggedForLiquidation')
-	.option('-t, --minDeadline <value>', 'change this value to get historical data', Math.round(Date.now() / 1000))
+	.option(
+		'-t, --minTime <value>',
+		'min deadline for flagged accounts - set to 30 days ago as default',
+		Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+	)
+	.option(
+		'-t, --maxTime <value>',
+		'max deadline for flagged accounts - set to 3 days from now as default',
+		Math.round((Date.now() + 86400 * 1000 * 3) / 1000),
+	)
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)
 	.option('-a, --account <value>', 'Account to filter on, if any')
 
-	.action(async ({ account, minDeadline, max }) => {
+	.action(async ({ account, minTime, maxTime, max }) => {
 		snx
-			.accountsFlaggedForLiquidation({ account, minDeadline, max })
+			.accountsFlaggedForLiquidation({ account, minTime, maxTime, max })
 			.then(logResults())
 			.then(showResultCount({ max }));
 	});
@@ -402,13 +411,13 @@ program
 	.command('snx.accountsRemovedFromLiquidation')
 	.option(
 		'-T, --maxTime <value>',
-		'this defaults to the current time to capture any actively flagged accounts that have been fixed',
+		'min time for fixed flagged accounts - set to now as default',
 		Math.round(Date.now() / 1000),
 	)
 	.option(
 		'-t, --minTime <value>',
-		'this defaults to 3 days ago to ONLY capture any actively flagged accounts that have been fixed',
-		Math.round((Date.now() - 86400 * 1000 * 3) / 1000),
+		'max time for fixed flagged accounts - set to 30 days ago as default',
+		Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
 	)
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)
 	.option('-a, --account <value>', 'Account to filter on, if any')
@@ -421,13 +430,45 @@ program
 	});
 
 program
-	.command('snx.getActiveLiquidations')
+	.command('snx.accountsLiquidated')
+	.option(
+		'-T, --maxTime <value>',
+		'min time for fixed flagged accounts - set to now as default',
+		Math.round(Date.now() / 1000),
+	)
+	.option(
+		'-t, --minTime <value>',
+		'max time for fixed flagged accounts - set to 30 days ago as default',
+		Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+	)
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)
 	.option('-a, --account <value>', 'Account to filter on, if any')
 
-	.action(async ({ account, max }) => {
+	.action(async ({ account, minTime, maxTime, max }) => {
 		snx
-			.getActiveLiquidations({ account, max })
+			.accountsLiquidated({ account, minTime, maxTime, max })
+			.then(logResults())
+			.then(showResultCount({ max }));
+	});
+
+program
+	.command('snx.getActiveLiquidations')
+	.option(
+		'-T, --maxTime <value>',
+		'min time for fixed flagged accounts - set to now as default',
+		Math.round(Date.now() / 1000),
+	)
+	.option(
+		'-t, --minTime <value>',
+		'max time for fixed flagged accounts - set to 30 days ago as default',
+		Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+	)
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-a, --account <value>', 'Account to filter on, if any')
+
+	.action(async ({ minTime, maxTime, account, max }) => {
+		snx
+			.getActiveLiquidations({ minTime, maxTime, account, max })
 			.then(logResults())
 			.then(showResultCount({ max }));
 	});
