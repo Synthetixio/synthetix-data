@@ -388,14 +388,14 @@ program
 program
 	.command('snx.accountsFlaggedForLiquidation')
 	.option(
-		'-t, --minTime <value>',
-		'min deadline for flagged accounts - set to 30 days ago as default',
-		Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
-	)
-	.option(
 		'-t, --maxTime <value>',
 		'max deadline for flagged accounts - set to 3 days from now as default',
 		Math.round((Date.now() + 86400 * 1000 * 3) / 1000),
+	)
+	.option(
+		'-t, --minTime <value>',
+		'min deadline for flagged accounts - set to 27 days ago as default',
+		Math.round((Date.now() - 86400 * 1000 * 27) / 1000),
 	)
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)
 	.option('-a, --account <value>', 'Account to filter on, if any')
@@ -411,12 +411,12 @@ program
 	.command('snx.accountsRemovedFromLiquidation')
 	.option(
 		'-T, --maxTime <value>',
-		'min time for fixed flagged accounts - set to now as default',
+		'max time for fixed flagged accounts - set to now as default',
 		Math.round(Date.now() / 1000),
 	)
 	.option(
 		'-t, --minTime <value>',
-		'max time for fixed flagged accounts - set to 30 days ago as default',
+		'min time for fixed flagged accounts - set to 30 days ago as default',
 		Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
 	)
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)
@@ -433,12 +433,12 @@ program
 	.command('snx.accountsLiquidated')
 	.option(
 		'-T, --maxTime <value>',
-		'min time for fixed flagged accounts - set to now as default',
+		'max time for fixed flagged accounts - set to now as default',
 		Math.round(Date.now() / 1000),
 	)
 	.option(
 		'-t, --minTime <value>',
-		'max time for fixed flagged accounts - set to 30 days ago as default',
+		'min time for fixed flagged accounts - set to 30 days ago as default',
 		Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
 	)
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)
@@ -455,12 +455,12 @@ program
 	.command('snx.getActiveLiquidations')
 	.option(
 		'-T, --maxTime <value>',
-		'min time for fixed flagged accounts - set to now as default',
+		'max time for fixed flagged accounts - set to now as default',
 		Math.round(Date.now() / 1000),
 	)
 	.option(
 		'-t, --minTime <value>',
-		'max time for fixed flagged accounts - set to 30 days ago as default',
+		'min time for fixed flagged accounts - set to 30 days ago as default',
 		Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
 	)
 	.option('-m, --max <value>', 'Maximum number of results', Infinity)

@@ -944,10 +944,10 @@ module.exports = {
 				.catch(err => console.error(err));
 		},
 		accountsFlaggedForLiquidation({
-			// default check is past thirty days
-			minTime = Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
 			// default check is 3 days from now
 			maxTime = Math.round((Date.now() + 86400 * 1000 * 3) / 1000),
+			// default check is past twenty seven days
+			minTime = Math.round((Date.now() - 86400 * 1000 * 27) / 1000),
 			account = undefined,
 			max = 5000,
 		} = {}) {
@@ -957,7 +957,7 @@ module.exports = {
 				query: {
 					entity: 'accountFlaggedForLiquidations',
 					selection: {
-						orderBy: 'timestamp',
+						orderBy: 'deadline',
 						orderDirection: 'asc',
 						where: {
 							account: account ? `\\"${account}\\"` : undefined,
@@ -990,7 +990,7 @@ module.exports = {
 				query: {
 					entity: 'accountRemovedFromLiquidations',
 					selection: {
-						orderBy: 'timestamp',
+						orderBy: 'time',
 						orderDirection: 'asc',
 						where: {
 							account: account ? `\\"${account}\\"` : undefined,
@@ -1021,7 +1021,7 @@ module.exports = {
 				query: {
 					entity: 'accountLiquidateds',
 					selection: {
-						orderBy: 'timestamp',
+						orderBy: 'time',
 						orderDirection: 'asc',
 						where: {
 							account: account ? `\\"${account}\\"` : undefined,
@@ -1042,22 +1042,28 @@ module.exports = {
 				})),
 			);
 		},
-		// WIP
 		getActiveLiquidations({
-			account = undefined,
-			max = 5000,
 			maxTime = Math.round(Date.now() / 1000),
 			// default check is past thirty days
 			minTime = Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+			account = undefined,
+			max = 5000,
 		} = {}) {
-			return this.accountsFlaggedForLiquidation({ account, max, maxTime, minTime }).then(flaggedResults =>
-				this.accountsRemovedFromLiquidation({ account, max }).then(removedResults =>
-					flaggedResults.reduce((acc, curr) => {
-						if (removedResults.findIndex(o => o.account === curr.account) === -1) {
-							acc.push(curr);
-						}
-						return acc;
-					}, []),
+			return this.accountsLiquidated({ account, max, maxTime, minTime }).then(liquidatedResults =>
+				this.accountsFlaggedForLiquidation({
+					account,
+					max,
+					maxTime: maxTime + Math.round(86400 * 3),
+					minTime: minTime + Math.round(86400 * 3),
+				}).then(flaggedResults =>
+					this.accountsRemovedFromLiquidation({ account, max, maxTime, minTime }).then(removedResults =>
+						[...liquidatedResults, ...flaggedResults].reduce((acc, curr) => {
+							if (removedResults.findIndex(o => o.account === curr.account) === -1) {
+								acc.push(curr);
+							}
+							return acc;
+						}, []),
+					),
 				),
 			);
 		},
