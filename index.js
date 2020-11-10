@@ -1438,22 +1438,20 @@ module.exports = {
 			account = undefined,
 			max = 5000,
 		} = {}) {
-			return this.accountsRemovedFromLiquidation({ account, max, maxTime, minTime }).then(liquidatedResults =>
-				this.accountsFlaggedForLiquidation({
-					account,
-					max,
-					maxTime: maxTime + Math.round(86400 * 3),
-					minTime: minTime + Math.round(86400 * 3),
-				}).then(flaggedResults =>
-					this.accountsRemovedFromLiquidation({ account, max, maxTime, minTime }).then(removedResults =>
-						[...liquidatedResults, ...flaggedResults].reduce((acc, curr) => {
-							if (removedResults.findIndex(o => o.account === curr.account) === -1) {
-								acc.push(curr);
-							}
-							return acc;
-						}, []),
-					),
-				),
+			return this.accountsFlaggedForLiquidation({
+				account,
+				max,
+				maxTime: maxTime + Math.round(86400 * 3),
+				minTime: minTime + Math.round(86400 * 3),
+			}).then(flaggedResults =>
+				this.accountsRemovedFromLiquidation({ account, max, maxTime, minTime }).then(removedResults => {
+					return flaggedResults.reduce((acc, curr) => {
+						if (removedResults.findIndex(o => o.account === curr.account) === -1) {
+							acc.push(curr);
+						}
+						return acc;
+					}, []);
+				}),
 			);
 		},
 	},
