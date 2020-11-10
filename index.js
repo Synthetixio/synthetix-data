@@ -14,6 +14,7 @@ const graphAPIEndpoints = {
 	etherCollateral: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-loans',
 	limitOrders: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-limit-orders',
 	exchanger: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-exchanger',
+	liquidations: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-liquidations',
 };
 
 const graphWSEndpoints = {
@@ -1327,6 +1328,131 @@ module.exports = {
 					),
 				)
 				.catch(err => console.error(err));
+		},
+	},
+	liquidations: {
+		accountsFlaggedForLiquidation({
+			// default check is 3 days from now
+			maxTime = Math.round((Date.now() + 86400 * 1000 * 3) / 1000),
+			// default check is past twenty seven days
+			minTime = Math.round((Date.now() - 86400 * 1000 * 27) / 1000),
+			account = undefined,
+			max = 5000,
+		} = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.liquidations,
+				max,
+				query: {
+					entity: 'accountFlaggedForLiquidations',
+					selection: {
+						orderBy: 'deadline',
+						orderDirection: 'asc',
+						where: {
+							account: account ? `\\"${account}\\"` : undefined,
+							deadline_gte: roundTimestampTenSeconds(minTime) || undefined,
+							deadline_lte: roundTimestampTenSeconds(maxTime) || undefined,
+						},
+					},
+					properties: ['id', 'deadline', 'account', 'collateralRatio', 'liquidatableNonEscrowSNX'],
+				},
+			}).then(results =>
+				results.map(({ id, deadline, account, collateralRatio, liquidatableNonEscrowSNX }) => ({
+					id,
+					deadline: Number(deadline * 1000),
+					account,
+					collateralRatio: collateralRatio / 1e18,
+					liquidatableNonEscrowSNX: liquidatableNonEscrowSNX / 1e18,
+				})),
+			);
+		},
+		accountsRemovedFromLiquidation({
+			maxTime = Math.round(Date.now() / 1000),
+			// default check is past thirty days
+			minTime = Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+			account = undefined,
+			max = 5000,
+		} = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.liquidations,
+				max,
+				query: {
+					entity: 'accountRemovedFromLiquidations',
+					selection: {
+						orderBy: 'time',
+						orderDirection: 'asc',
+						where: {
+							account: account ? `\\"${account}\\"` : undefined,
+							time_gte: roundTimestampTenSeconds(minTime) || undefined,
+							time_lte: roundTimestampTenSeconds(maxTime) || undefined,
+						},
+					},
+					properties: ['id', 'time', 'account'],
+				},
+			}).then(results =>
+				results.map(({ id, time, account }) => ({
+					id,
+					time: Number(time * 1000),
+					account,
+				})),
+			);
+		},
+		accountsLiquidated({
+			maxTime = Math.round(Date.now() / 1000),
+			// default check is past thirty days
+			minTime = Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+			account = undefined,
+			max = 5000,
+		} = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.liquidations,
+				max,
+				query: {
+					entity: 'accountLiquidateds',
+					selection: {
+						orderBy: 'time',
+						orderDirection: 'asc',
+						where: {
+							account: account ? `\\"${account}\\"` : undefined,
+							time_gte: roundTimestampTenSeconds(minTime) || undefined,
+							time_lte: roundTimestampTenSeconds(maxTime) || undefined,
+						},
+					},
+					properties: ['id', 'time', 'account', 'liquidator', 'amountLiquidated', 'snxRedeemed'],
+				},
+			}).then(results =>
+				results.map(({ id, time, account, amountLiquidated, snxRedeemed, liquidator }) => ({
+					id,
+					hash: id.split('-')[0],
+					time: Number(time * 1000),
+					account,
+					liquidator,
+					amountLiquidated: amountLiquidated / 1e18,
+					snxRedeemed: snxRedeemed / 1e18,
+				})),
+			);
+		},
+		getActiveLiquidations({
+			maxTime = Math.round(Date.now() / 1000),
+			// default check is past thirty days
+			minTime = Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+			account = undefined,
+			max = 5000,
+		} = {}) {
+			return this.accountsFlaggedForLiquidation({
+				account,
+				max,
+				maxTime: maxTime + Math.round(86400 * 3),
+				minTime: minTime + Math.round(86400 * 3),
+			}).then(flaggedResults =>
+				this.accountsRemovedFromLiquidation({ account, max, maxTime, minTime }).then(removedResults => {
+					return flaggedResults.reduce((acc, curr) => {
+						if (removedResults.findIndex(o => o.account === curr.account) === -1) {
+							acc.push(curr);
+						}
+						return acc;
+					}, []);
+				}),
+			);
 		},
 	},
 };

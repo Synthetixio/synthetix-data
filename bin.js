@@ -4,7 +4,18 @@ const program = require('commander');
 const stringify = require('csv-stringify');
 const moment = require('moment');
 
-const { exchanges, depot, synths, rate, snx, binaryOptions, etherCollateral, limitOrders, exchanger } = require('.');
+const {
+	exchanges,
+	depot,
+	synths,
+	rate,
+	snx,
+	binaryOptions,
+	etherCollateral,
+	limitOrders,
+	exchanger,
+	liquidations,
+} = require('.');
 
 const logResults = ({ json } = {}) => results => {
 	console.log(json ? JSON.stringify(results, null, 2) : results);
@@ -497,6 +508,94 @@ program
 	.action(async ({ max, from }) => {
 		exchanger
 			.exchangeEntriesSettled({ max, from })
+			.then(logResults())
+			.then(showResultCount({ max }));
+	});
+
+program
+	.command('liquidations.accountsFlaggedForLiquidation')
+	.option(
+		'-t, --maxTime <value>',
+		'max deadline for flagged accounts - set to 3 days from now as default',
+		Math.round((Date.now() + 86400 * 1000 * 3) / 1000),
+	)
+	.option(
+		'-t, --minTime <value>',
+		'min deadline for flagged accounts - set to 27 days ago as default',
+		Math.round((Date.now() - 86400 * 1000 * 27) / 1000),
+	)
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-a, --account <value>', 'Account to filter on, if any')
+
+	.action(async ({ account, minTime, maxTime, max }) => {
+		liquidations
+			.accountsFlaggedForLiquidation({ account, minTime, maxTime, max })
+			.then(logResults())
+			.then(showResultCount({ max }));
+	});
+
+program
+	.command('liquidations.accountsRemovedFromLiquidation')
+	.option(
+		'-T, --maxTime <value>',
+		'max time for fixed flagged accounts - set to now as default',
+		Math.round(Date.now() / 1000),
+	)
+	.option(
+		'-t, --minTime <value>',
+		'min time for fixed flagged accounts - set to 30 days ago as default',
+		Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+	)
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-a, --account <value>', 'Account to filter on, if any')
+
+	.action(async ({ account, minTime, maxTime, max }) => {
+		liquidations
+			.accountsRemovedFromLiquidation({ account, minTime, maxTime, max })
+			.then(logResults())
+			.then(showResultCount({ max }));
+	});
+
+program
+	.command('liquidations.accountsLiquidated')
+	.option(
+		'-T, --maxTime <value>',
+		'max time for fixed flagged accounts - set to now as default',
+		Math.round(Date.now() / 1000),
+	)
+	.option(
+		'-t, --minTime <value>',
+		'min time for fixed flagged accounts - set to 30 days ago as default',
+		Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+	)
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-a, --account <value>', 'Account to filter on, if any')
+
+	.action(async ({ account, minTime, maxTime, max }) => {
+		liquidations
+			.accountsLiquidated({ account, minTime, maxTime, max })
+			.then(logResults())
+			.then(showResultCount({ max }));
+	});
+
+program
+	.command('liquidations.getActiveLiquidations')
+	.option(
+		'-T, --maxTime <value>',
+		'max time for fixed flagged accounts - set to now as default',
+		Math.round(Date.now() / 1000),
+	)
+	.option(
+		'-t, --minTime <value>',
+		'min time for fixed flagged accounts - set to 30 days ago as default',
+		Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+	)
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-a, --account <value>', 'Account to filter on, if any')
+
+	.action(async ({ minTime, maxTime, account, max }) => {
+		liquidations
+			.getActiveLiquidations({ minTime, maxTime, account, max })
 			.then(logResults())
 			.then(showResultCount({ max }));
 	});
