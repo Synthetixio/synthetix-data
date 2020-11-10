@@ -530,52 +530,58 @@ module.exports = {
 				)
 				.catch(err => console.error(err));
 		},
-		dailyRateChange({ synths = [], max = 100 }) {
+		dailyRateChange({ synths = [], max = 100, fromBlock }) {
 			const IGNORE_SYNTHS = ['XDR', 'XDRB', 'nUSD', 'sUSD'];
 			return pageResults({
 				api: graphAPIEndpoints.rates,
 				max,
 				query: {
+					selection: {
+						block: {
+							number: Number(fromBlock),
+						},
+					},
 					entity: 'latestRates',
 					properties: ['id', 'rate'],
 				},
 			})
 				.then(latestRates => {
-					let filteredRates = latestRates.filter(latestRate => !IGNORE_SYNTHS.includes(latestRate.id));
-					if (synths.length > 0) {
-						filteredRates = latestRates.filter(latestRate => synths.includes(latestRate.id));
-					}
-
-					const dayDate = new Date();
-					dayDate.setDate(dayDate.getDate() - 1);
-					const timestamp = roundTimestampTenSeconds(parseInt(dayDate.getTime() / 1000));
-
-					return Promise.all(
-						filteredRates.map(async filteredRate =>
-							pageResults({
-								api: graphAPIEndpoints.rates,
-								max: 1,
-								query: {
-									entity: 'rateUpdates',
-									selection: {
-										orderBy: 'timestamp',
-										orderDirection: 'desc',
-										where: {
-											synth: `\\"${filteredRate.id}\\"`,
-											timestamp_lte: timestamp,
-										},
-									},
-									properties: ['rate', 'synth'],
-								},
-							}),
-						),
-					).then(dayOldRates => {
-						return dayOldRates.map((oldRate, index) => {
-							return {
-								synth: filteredRates[index].id,
-								'24HRChange': Number(filteredRates[index].rate) / Number(oldRate[0].rate) - 1,
+					const changeValues = latestRates.reduce((acc, curr) => {
+						if (
+							!IGNORE_SYNTHS.includes(curr.id) &&
+							(synths.length === 0 || (synths.length > 0 && synths.includes(curr.id)))
+						) {
+							acc[curr.id] = {
+								currentRate: curr.rate,
 							};
+						}
+						return acc;
+					}, {});
+
+					const dayOldBlock = Number(fromBlock) - (24 * 60 * 60) / 15;
+
+					return pageResults({
+						api: graphAPIEndpoints.rates,
+						max,
+						query: {
+							selection: {
+								block: {
+									number: dayOldBlock,
+								},
+							},
+							entity: 'latestRates',
+							properties: ['id', 'rate'],
+						},
+					}).then(dayOldRates => {
+						dayOldRates.forEach(dayOldRate => {
+							if (changeValues[dayOldRate.id]) {
+								changeValues[dayOldRate.id].dayOldRate = dayOldRate.rate;
+								changeValues[dayOldRate.id]['24HRChange'] =
+									changeValues[dayOldRate.id].currentRate / dayOldRate.rate - 1;
+							}
 						});
+
+						return changeValues;
 					});
 				})
 				.catch(err => console.error(err));

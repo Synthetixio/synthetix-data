@@ -253,10 +253,12 @@ program
 
 program
 	.command('rate.dailyRateChange')
-	.option('-s, --synths [value...]', 'specify synths')
-	.action(async ({ synths }) => {
+	.option('-s, --synths [value...]', 'specify synths to get rate changes from')
+	.option('-f, --fromBlock <value>', 'will get rates 24HR prior starting from this block')
+	.option('-m, --max <value>', 'max needs to be higher than total synths in the system at the moment', 100)
+	.action(async ({ synths, fromBlock }) => {
 		rate
-			.dailyRateChange({ synths })
+			.dailyRateChange({ synths, fromBlock })
 			.then(logResults())
 			.then(showResultCount({ max: 'n/a' }));
 	});
