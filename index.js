@@ -5,7 +5,14 @@ const { SubscriptionClient } = require('subscriptions-transport-ws');
 
 const pageResults = require('graph-results-pager');
 
-const { ZERO_ADDRESS, hexToAscii, roundTimestampTenSeconds, getHashFromId } = require('./utils');
+const {
+	ZERO_ADDRESS,
+	hexToAscii,
+	roundTimestampTenSeconds,
+	getHashFromId,
+	formatGQLArray,
+	formatGQLString,
+} = require('./utils');
 
 const graphAPIEndpoints = {
 	snx: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix',
@@ -485,6 +492,22 @@ module.exports = {
 			maxTimestamp = undefined,
 			max = 100,
 		} = {}) {
+			let synthSelectionQuery = {};
+
+			if (Array.isArray(synth)) {
+				synthSelectionQuery = {
+					synth_in: formatGQLArray(synth),
+				};
+			} else if (synth) {
+				synthSelectionQuery = {
+					synth: formatGQLString(synth),
+				};
+			} else {
+				synthSelectionQuery = {
+					synth_not_in: formatGQLArray(['SNX', 'ETH', 'XDR']),
+				};
+			}
+
 			return pageResults({
 				api: graphAPIEndpoints.rates,
 				max,
@@ -494,10 +517,7 @@ module.exports = {
 						orderBy: 'timestamp',
 						orderDirection: 'desc',
 						where: {
-							synth: synth ? `\\"${synth}\\"` : undefined,
-							synth_not_in: !synth
-								? '[' + ['SNX', 'ETH', 'XDR'].map(code => `\\"${code}\\"`).join(',') + ']'
-								: undefined, // ignore non-synth prices
+							...synthSelectionQuery,
 							block_gte: minBlock || undefined,
 							block_lte: maxBlock || undefined,
 							timestamp_gte: roundTimestampTenSeconds(minTimestamp) || undefined,
