@@ -16,9 +16,15 @@ const roundTimestampTenSeconds = timestamp => Math.round(timestamp / 10) * 10;
 
 const getHashFromId = id => id.split('-')[0];
 
+const formatGQLArray = arr => '[' + arr.map(code => `\\"${code}\\"`).join(',') + ']';
+
+const formatGQLString = str => `\\"${str}\\"`;
+
 module.exports = {
 	ZERO_ADDRESS,
 	hexToAscii,
 	roundTimestampTenSeconds,
 	getHashFromId,
+	formatGQLArray,
+	formatGQLString,
 };
