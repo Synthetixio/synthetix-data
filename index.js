@@ -5,6 +5,15 @@ const { SubscriptionClient } = require('subscriptions-transport-ws');
 
 const pageResults = require('graph-results-pager');
 
+const {
+	ZERO_ADDRESS,
+	hexToAscii,
+	roundTimestampTenSeconds,
+	getHashFromId,
+	formatGQLArray,
+	formatGQLString,
+} = require('./utils');
+
 const graphAPIEndpoints = {
 	snx: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix',
 	depot: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-depot',
@@ -14,28 +23,13 @@ const graphAPIEndpoints = {
 	etherCollateral: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-loans',
 	limitOrders: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-limit-orders',
 	exchanger: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-exchanger',
+	liquidations: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-liquidations',
 };
 
 const graphWSEndpoints = {
 	exchanges: 'wss://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-exchanges',
 	rates: 'wss://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-rates',
 };
-
-const ZERO_ADDRESS = '0x' + '0'.repeat(40);
-
-const hexToAscii = str => {
-	const hex = str.toString();
-	let out = '';
-	for (let n = 2; n < hex.length; n += 2) {
-		const nextPair = hex.substr(n, 2);
-		if (nextPair !== '00') {
-			out += String.fromCharCode(parseInt(nextPair, 16));
-		}
-	}
-	return out;
-};
-
-const roundTimestampTenSeconds = timestamp => Math.round(timestamp / 10) * 10;
 
 module.exports = {
 	pageResults,
@@ -60,7 +54,7 @@ module.exports = {
 			})
 				.then(results =>
 					results.map(({ id, user, amount, type, minimum, depositIndex, block, timestamp }) => ({
-						hash: id.split('-')[0],
+						hash: getHashFromId(id),
 						user,
 						amount: amount / 1e18,
 						type,
@@ -102,7 +96,7 @@ module.exports = {
 			})
 				.then(results =>
 					results.map(({ id, fromAddress, toAddress, fromETHAmount, toAmount, depositIndex, block, timestamp }) => ({
-						hash: id.split('-')[0],
+						hash: getHashFromId(id),
 						fromAddress,
 						toAddress,
 						fromETHAmount: fromETHAmount / 1e18,
@@ -111,6 +105,7 @@ module.exports = {
 						block: Number(block),
 						timestamp: Number(timestamp * 1000),
 						date: new Date(timestamp * 1000),
+						type: 'cleared',
 					})),
 				)
 				.catch(err => console.error(err));
@@ -134,7 +129,7 @@ module.exports = {
 			})
 				.then(results =>
 					results.map(({ id, from, fromAmount, fromCurrency, toAmount, toCurrency, block, timestamp }) => ({
-						hash: id.split('-')[0],
+						hash: getHashFromId(id),
 						from,
 						fromAmount: fromAmount / 1e18,
 						fromCurrency,
@@ -143,6 +138,7 @@ module.exports = {
 						block: Number(block),
 						timestamp: Number(timestamp * 1000),
 						date: new Date(timestamp * 1000),
+						type: 'bought',
 					})),
 				)
 				.catch(err => console.error(err));
@@ -184,7 +180,7 @@ module.exports = {
 			block: Number(block),
 			timestamp: Number(timestamp * 1000),
 			date: new Date(timestamp * 1000),
-			hash: id.split('-')[0],
+			hash: getHashFromId(id),
 			fromAddress: from,
 			fromAmount: fromAmount / 1e18, // shorthand way to convert wei into eth
 			fromCurrencyKeyBytes: fromCurrencyKey,
@@ -321,7 +317,7 @@ module.exports = {
 							block: Number(block),
 							timestamp: Number(timestamp * 1000),
 							date: new Date(timestamp * 1000),
-							hash: id.split('-')[0],
+							hash: getHashFromId(id),
 							account,
 							amount: amount / 1e18, // shorthand way to convert wei into eth,
 							amountInUSD: amountInUSD / 1e18,
@@ -422,7 +418,7 @@ module.exports = {
 						block: Number(block),
 						timestamp: Number(timestamp * 1000),
 						date: new Date(timestamp * 1000),
-						hash: id.split('-')[0],
+						hash: getHashFromId(id),
 						from,
 						to,
 						value: value / 1e18,
@@ -454,7 +450,7 @@ module.exports = {
 			})
 				.then(results =>
 					results.map(({ id, balanceOf, synth }) => ({
-						address: id.split('-')[0],
+						address: getHashFromId(id),
 						balanceOf: balanceOf ? balanceOf / 1e18 : null,
 						synth,
 					})),
@@ -496,6 +492,22 @@ module.exports = {
 			maxTimestamp = undefined,
 			max = 100,
 		} = {}) {
+			let synthSelectionQuery = {};
+
+			if (Array.isArray(synth)) {
+				synthSelectionQuery = {
+					synth_in: formatGQLArray(synth),
+				};
+			} else if (synth) {
+				synthSelectionQuery = {
+					synth: formatGQLString(synth),
+				};
+			} else {
+				synthSelectionQuery = {
+					synth_not_in: formatGQLArray(['SNX', 'ETH', 'XDR']),
+				};
+			}
+
 			return pageResults({
 				api: graphAPIEndpoints.rates,
 				max,
@@ -505,10 +517,7 @@ module.exports = {
 						orderBy: 'timestamp',
 						orderDirection: 'desc',
 						where: {
-							synth: synth ? `\\"${synth}\\"` : undefined,
-							synth_not_in: !synth
-								? '[' + ['SNX', 'ETH', 'XDR'].map(code => `\\"${code}\\"`).join(',') + ']'
-								: undefined, // ignore non-synth prices
+							...synthSelectionQuery,
 							block_gte: minBlock || undefined,
 							block_lte: maxBlock || undefined,
 							timestamp_gte: roundTimestampTenSeconds(minTimestamp) || undefined,
@@ -524,7 +533,7 @@ module.exports = {
 						synth,
 						timestamp: Number(timestamp * 1000),
 						date: new Date(timestamp * 1000),
-						hash: id.split('-')[0],
+						hash: getHashFromId(id),
 						rate: rate / 1e18,
 					})),
 				)
@@ -646,11 +655,12 @@ module.exports = {
 			})
 				.then(results =>
 					results.map(({ id, account, timestamp, block, value }) => ({
-						hash: id,
+						hash: getHashFromId(id),
 						account,
 						timestamp: Number(timestamp * 1000),
 						block: Number(block),
 						value: value / 1e18,
+						type: 'issued',
 					})),
 				)
 				.catch(err => console.error(err));
@@ -681,11 +691,12 @@ module.exports = {
 			})
 				.then(results =>
 					results.map(({ id, account, timestamp, block, value }) => ({
-						hash: id,
+						hash: getHashFromId(id),
 						account,
 						timestamp: Number(timestamp * 1000),
 						block: Number(block),
 						value: value / 1e18,
+						type: 'burned',
 					})),
 				)
 				.catch(err => console.error(err));
@@ -861,7 +872,7 @@ module.exports = {
 						block: Number(block),
 						timestamp: Number(timestamp * 1000),
 						date: new Date(timestamp * 1000),
-						hash: id.split('-')[0],
+						hash: getHashFromId(id),
 						from,
 						to,
 						value: value / 1e18,
@@ -894,12 +905,13 @@ module.exports = {
 			})
 				.then(results =>
 					results.map(({ id, account, timestamp, block, value, rewards }) => ({
-						hash: id.split('-')[0],
+						hash: getHashFromId(id),
 						account,
 						timestamp: Number(timestamp * 1000),
 						block: Number(block),
 						value: value / 1e18,
 						rewards: rewards / 1e18,
+						type: 'feesClaimed',
 					})),
 				)
 				.catch(err => console.error(err));
@@ -1035,7 +1047,7 @@ module.exports = {
 				},
 			}).then(results =>
 				results.map(({ id, timestamp, type, account, currencyKey, side, amount, market, fee }) => ({
-					hash: id.split('-')[0],
+					hash: getHashFromId(id),
 					timestamp: Number(timestamp * 1000),
 					type,
 					account,
@@ -1141,7 +1153,7 @@ module.exports = {
 							hasPartialLiquidations,
 							collateralMinted,
 						}) => ({
-							id: Number(id.split('-')[0]),
+							id: Number(getHashFromId(id)),
 							account,
 							createdAt: new Date(Number(createdAt * 1000)),
 							closedAt: closedAt ? new Date(Number(closedAt * 1000)) : null,
@@ -1173,7 +1185,7 @@ module.exports = {
 				.then(results =>
 					results.map(({ account, liquidatedAmount, liquidator, liquidatedCollateral, loanId, id }) => ({
 						loanId: Number(loanId),
-						txHash: id.split('-')[0],
+						txHash: getHashFromId(id),
 						liquidatedCollateral: liquidatedCollateral / 1e18,
 						penaltyAmount: (liquidatedCollateral / 1e18) * 0.1,
 						liquidator,
@@ -1201,7 +1213,7 @@ module.exports = {
 				.then(results =>
 					results.map(({ account, liquidator, loanId, id, timestamp }) => ({
 						loanId: Number(loanId),
-						txHash: id.split('-')[0],
+						txHash: getHashFromId(id),
 						liquidator,
 						account,
 						timestamp: new Date(Number(timestamp * 1000)),
@@ -1313,7 +1325,7 @@ module.exports = {
 							destRoundIdAtPeriodEnd,
 							exchangeTimestamp,
 						}) => ({
-							hash: id.split('-')[0],
+							hash: getHashFromId(id),
 							from,
 							src: hexToAscii(src),
 							amount: amount / 1e18,
@@ -1327,6 +1339,132 @@ module.exports = {
 					),
 				)
 				.catch(err => console.error(err));
+		},
+	},
+	liquidations: {
+		accountsFlaggedForLiquidation({
+			// default check is 3 days from now
+			maxTime = Math.round((Date.now() + 86400 * 1000 * 3) / 1000),
+			// default check is past twenty seven days
+			minTime = Math.round((Date.now() - 86400 * 1000 * 27) / 1000),
+			account = undefined,
+			max = 5000,
+		} = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.liquidations,
+				max,
+				query: {
+					entity: 'accountFlaggedForLiquidations',
+					selection: {
+						orderBy: 'deadline',
+						orderDirection: 'asc',
+						where: {
+							account: account ? `\\"${account}\\"` : undefined,
+							deadline_gte: roundTimestampTenSeconds(minTime) || undefined,
+							deadline_lte: roundTimestampTenSeconds(maxTime) || undefined,
+						},
+					},
+					properties: ['id', 'deadline', 'account', 'collateral', 'collateralRatio', 'liquidatableNonEscrowSNX'],
+				},
+			}).then(results =>
+				results.map(({ id, deadline, account, collateralRatio, liquidatableNonEscrowSNX, collateral }) => ({
+					id,
+					deadline: Number(deadline * 1000),
+					account,
+					collateral: collateral / 1e18,
+					collateralRatio: collateralRatio / 1e18,
+					liquidatableNonEscrowSNX: liquidatableNonEscrowSNX / 1e18,
+				})),
+			);
+		},
+		accountsRemovedFromLiquidation({
+			maxTime = Math.round(Date.now() / 1000),
+			// default check is past thirty days
+			minTime = Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+			account = undefined,
+			max = 5000,
+		} = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.liquidations,
+				max,
+				query: {
+					entity: 'accountRemovedFromLiquidations',
+					selection: {
+						orderBy: 'time',
+						orderDirection: 'asc',
+						where: {
+							account: account ? `\\"${account}\\"` : undefined,
+							time_gte: roundTimestampTenSeconds(minTime) || undefined,
+							time_lte: roundTimestampTenSeconds(maxTime) || undefined,
+						},
+					},
+					properties: ['id', 'time', 'account'],
+				},
+			}).then(results =>
+				results.map(({ id, time, account }) => ({
+					id,
+					time: Number(time * 1000),
+					account,
+				})),
+			);
+		},
+		accountsLiquidated({
+			maxTime = Math.round(Date.now() / 1000),
+			// default check is past thirty days
+			minTime = Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+			account = undefined,
+			max = 5000,
+		} = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.liquidations,
+				max,
+				query: {
+					entity: 'accountLiquidateds',
+					selection: {
+						orderBy: 'time',
+						orderDirection: 'asc',
+						where: {
+							account: account ? `\\"${account}\\"` : undefined,
+							time_gte: roundTimestampTenSeconds(minTime) || undefined,
+							time_lte: roundTimestampTenSeconds(maxTime) || undefined,
+						},
+					},
+					properties: ['id', 'time', 'account', 'liquidator', 'amountLiquidated', 'snxRedeemed'],
+				},
+			}).then(results =>
+				results.map(({ id, time, account, amountLiquidated, snxRedeemed, liquidator }) => ({
+					id,
+					hash: getHashFromId(id),
+					time: Number(time * 1000),
+					account,
+					liquidator,
+					amountLiquidated: amountLiquidated / 1e18,
+					snxRedeemed: snxRedeemed / 1e18,
+				})),
+			);
+		},
+		getActiveLiquidations({
+			maxTime = Math.round(Date.now() / 1000),
+			// default check is past thirty days
+			minTime = Math.round((Date.now() - 86400 * 1000 * 30) / 1000),
+			account = undefined,
+			max = 5000,
+		} = {}) {
+			return this.accountsFlaggedForLiquidation({
+				account,
+				max,
+				maxTime: maxTime + Math.round(86400 * 3),
+				minTime: minTime + Math.round(86400 * 3),
+			}).then(flaggedResults =>
+				this.accountsRemovedFromLiquidation({ account, max, maxTime, minTime }).then(removedResults => {
+					return flaggedResults.reduce((acc, curr) => {
+						if (removedResults.findIndex(o => o.account === curr.account) === -1) {
+							acc.push(curr);
+						}
+						return acc;
+					}, []);
+				}),
+			);
 		},
 	},
 };
