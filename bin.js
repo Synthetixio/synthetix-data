@@ -15,6 +15,7 @@ const {
 	limitOrders,
 	exchanger,
 	liquidations,
+	futures,
 } = require('.');
 
 const logResults = ({ json } = {}) => results => {
@@ -598,6 +599,20 @@ program
 			.getActiveLiquidations({ minTime, maxTime, account, max })
 			.then(logResults())
 			.then(showResultCount({ max }));
+	});
+
+program.command('futures.markets').action(async () => {
+	futures.markets().then(logResults());
+});
+
+program
+	.command('futures.liquidations')
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-a, --account <value>', 'Account to filter on, if any')
+	.option('-k, --market <value>', 'Market to filter on, if any')
+
+	.action(async ({ max, account, market }) => {
+		futures.liquidations({ max, account, market }).then(logResults());
 	});
 
 program.command('exchanges.observe').action(async () => {

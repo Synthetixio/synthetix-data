@@ -24,6 +24,7 @@ const graphAPIEndpoints = {
 	limitOrders: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-limit-orders',
 	exchanger: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-exchanger',
 	liquidations: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-liquidations',
+	futures: 'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix-futures',
 };
 
 const graphWSEndpoints = {
@@ -1464,6 +1465,57 @@ module.exports = {
 						return acc;
 					}, []);
 				}),
+			);
+		},
+	},
+	futures: {
+		markets({ max = 100 } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.futures,
+				max,
+				query: {
+					entity: 'markets',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'asc',
+					},
+					properties: ['id', 'timestamp', 'asset'],
+				},
+			}).then(results =>
+				results.map(({ id, timestamp, asset }) => ({
+					address: getHashFromId(id),
+					timestamp: Number(timestamp * 1000),
+					asset: hexToAscii(asset),
+				})),
+			);
+		},
+		liquidations({ max = 5000, account = undefined, market = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.futures,
+				max,
+				query: {
+					entity: 'liquidations',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'asc',
+						where: {
+							account: account ? formatGQLString(account) : undefined,
+							market: market ? formatGQLString(market) : undefined,
+						},
+					},
+					properties: ['id', 'timestamp', 'account', 'liquidator', 'size', 'price', 'currency', 'market'],
+				},
+			}).then(results =>
+				results.map(({ id, timestamp, account, liquidator, size, price, currency, market }) => ({
+					transactionHash: getHashFromId(id),
+					timestamp: Number(timestamp * 1000),
+					account,
+					liquidator,
+					size: size / 1e18,
+					price: price / 1e18,
+					currency: hexToAscii(currency),
+					market,
+				})),
 			);
 		},
 	},
