@@ -1518,5 +1518,48 @@ module.exports = {
 				})),
 			);
 		},
+		orders({ max = 5000, account = undefined, market = undefined, status = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.futures,
+				max,
+				query: {
+					entity: 'orders',
+					selection: {
+						orderBy: 'timestamp',
+						orderDirection: 'asc',
+						where: {
+							account: account ? formatGQLString(account) : undefined,
+							market: market ? formatGQLString(market) : undefined,
+							status: status ? formatGQLString(status) : undefined,
+						},
+					},
+					properties: [
+						'id',
+						'account',
+						'margin',
+						'leverage',
+						'status',
+						'fee',
+						'roundId',
+						'currency',
+						'market',
+						'timestamp',
+					],
+				},
+			}).then(results =>
+				results.map(({ id, account, margin, leverage, status, fee, roundId, currency, market, timestamp }) => ({
+					id: Number(id.split('-')[1]),
+					timestamp: Number(timestamp * 1000),
+					account,
+					margin: margin / 1e18,
+					leverage: leverage / 1e18,
+					status,
+					fee: fee / 1e18,
+					roundId: Number(roundId),
+					currency: hexToAscii(currency),
+					market,
+				})),
+			);
+		},
 	},
 };

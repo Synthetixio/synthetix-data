@@ -615,6 +615,17 @@ program
 		futures.liquidations({ max, account, market }).then(logResults());
 	});
 
+program
+	.command('futures.orders')
+	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-a, --account <value>', 'Account to filter on, if any')
+	.option('-k, --market <value>', 'Market to filter on, if any')
+	.option('-s, --status <value>', 'Order status to filter on, if any')
+
+	.action(async ({ max, account, market, status }) => {
+		futures.orders({ max, account, market, status }).then(logResults());
+	});
+
 program.command('exchanges.observe').action(async () => {
 	exchanges.observe().subscribe({
 		next(val) {
