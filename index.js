@@ -1555,7 +1555,7 @@ module.exports = {
 					leverage: leverage / 1e18,
 					status,
 					fee: fee / 1e18,
-					roundId: Number(roundId),
+					roundId,
 					currency: hexToAscii(currency),
 					market,
 				})),
