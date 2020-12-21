@@ -1340,7 +1340,7 @@ module.exports = {
 				)
 				.catch(err => console.error(err));
 		},
-		exchangeSourceData({ timeSeries = '1mo', partner = undefined }) {
+		dailyExchangeSourceData({ timeSeries = '1mo', partner = undefined }) {
 			const now = new Date();
 			const currentDayID = Math.floor(now.getTime() / 86400 / 1000);
 			let searchFromDayID;
@@ -1370,6 +1370,28 @@ module.exports = {
 				results.map(({ dayID, partner, trades, usdFees, usdVolume }) => ({
 					dayID: Number(dayID),
 					partner,
+					trades: Number(trades),
+					usdFees: Math.round(Number(usdFees) * 100) / 100,
+					usdVolume: Math.round(Number(usdVolume) * 100) / 100,
+				})),
+			);
+		},
+		exchangeSourceData({ partner = undefined }) {
+			return pageResults({
+				api: graphAPIEndpoints.exchanger,
+				max: 10000,
+				query: {
+					entity: 'exchangePartners',
+					selection: {
+						where: {
+							id: partner ? `\\"${partner}\\"` : undefined,
+						},
+					},
+					properties: ['trades', 'usdVolume', 'usdFees', 'id'],
+				},
+			}).then(results =>
+				results.map(({ id, trades, usdFees, usdVolume }) => ({
+					partner: id,
 					trades: Number(trades),
 					usdFees: Math.round(Number(usdFees) * 100) / 100,
 					usdVolume: Math.round(Number(usdVolume) * 100) / 100,

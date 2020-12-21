@@ -43,7 +43,8 @@ The below all return a Promise that resolves with the requested results.
 31. `snx.accountsFlaggedForLiquidation({ minTime, maxTime, account, max })` finds all the accounts that have been flagged for liquidation.
 32. `snx.accountsLiquidated({ maxTime, minTime, account, max })` finds all the accounts that have been liquidated after being flagged for liquidation.
 33. `snx.getActiveLiquidations({ max, account, minTime, maxTime })` finds all the accounts that have been flagged and are still pending liquidation or in a waiting state. Can also just check for a specific account if desired.
-34. `exchanger.exchangeSourceData({ timeSeries, partner })` Get the list of volume from all or specific sources.
+34. `exchanger.dailyExchangeSourceData({ timeSeries, partner })` Get the list of volume from all or specific sources.
+35. `exchanger.exchangeSourceData({ partner })` Get the list of all time volume from all or specific sources.
 
 ## Supported subscriptions
 
