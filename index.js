@@ -810,13 +810,14 @@ module.exports = {
 						orderBy: 'balanceOf',
 						orderDirection: 'desc',
 					},
-					properties: ['id', 'balanceOf'],
+					properties: ['id', 'balanceOf', 'vestedBalanceOf'],
 				},
 			})
 				.then(results =>
-					results.map(({ id, balanceOf }) => ({
+					results.map(({ id, balanceOf, vestedBalanceOf }) => ({
 						address: id,
 						balance: balanceOf / 1e18,
+						vestedBalanceOf: vestedBalanceOf / 1e18,
 					})),
 				)
 				.catch(err => console.error(err));
