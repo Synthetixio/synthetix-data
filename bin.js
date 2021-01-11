@@ -17,8 +17,14 @@ const {
 	liquidations,
 } = require('.');
 
-const logResults = ({ json } = {}) => results => {
-	console.log(json ? JSON.stringify(results, null, 2) : results);
+const logResults = ({ json, csv } = {}) => results => {
+	if (json) {
+		console.log(JSON.stringify(results, null, 2));
+	} else if (csv) {
+		stringify(results, { header: true }).pipe(process.stdout);
+	} else {
+		console.log(results);
+	}
 	return results;
 };
 
@@ -322,7 +328,7 @@ program
 	.command('snx.transfers')
 	.option('-f, --from <value>', 'A from address')
 	.option('-t, --to <value>', 'A to address')
-	.option(',m, --max <value>', 'Maximum number of results', 100)
+	.option('-m, --max <value>', 'Maximum number of results', 100)
 	.action(async ({ from, to, max }) => {
 		snx
 			.transfers({ from, to, max })
@@ -333,14 +339,14 @@ program
 program
 	.command('snx.rewards')
 	.option('-a, --addresses-only', 'Show addresses only')
-	.option('-m, --max <value>', 'Maximum number of results', Infinity)
+	.option('-m, --max <value>', 'Maximum number of results', 100)
 	.option('-j, --json', 'Whether or not to display the results as JSON')
-
-	.action(async ({ max, json, addressesOnly }) => {
+	.option('-c, --csv', 'Whether or not to display the results as a CSV')
+	.action(async ({ max, json, addressesOnly, csv }) => {
 		snx
 			.rewards({ max })
 			.then(results => (addressesOnly ? results.map(({ address }) => address) : results))
-			.then(logResults({ json }))
+			.then(logResults({ json, csv }))
 			.then(showResultCount({ max }));
 	});
 
