@@ -800,7 +800,7 @@ module.exports = {
 				.catch(err => console.error(err));
 		},
 
-		rewards({ max = 100 } = {}) {
+		rewards({ max = 100, minBalance = undefined, maxBalance = undefined } = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.snx,
 				max,
@@ -809,6 +809,10 @@ module.exports = {
 					selection: {
 						orderBy: 'balanceOf',
 						orderDirection: 'desc',
+						where: {
+							balanceOf_gte: minBalance ? `\\"${minBalance + '0'.repeat(18)}\\"` : undefined,
+							balanceOf_lte: maxBalance ? `\\"${maxBalance + '0'.repeat(18)}\\"` : undefined,
+						},
 					},
 					properties: ['id', 'balanceOf', 'vestedBalanceOf'],
 				},

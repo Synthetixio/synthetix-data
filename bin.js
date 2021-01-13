@@ -340,11 +340,13 @@ program
 	.command('snx.rewards')
 	.option('-a, --addresses-only', 'Show addresses only')
 	.option('-m, --max <value>', 'Maximum number of results', 100)
+	.option('-n, --min-balance <value>', 'Minimum balance')
 	.option('-j, --json', 'Whether or not to display the results as JSON')
 	.option('-c, --csv', 'Whether or not to display the results as a CSV')
-	.action(async ({ max, json, addressesOnly, csv }) => {
+	.option('-x, --max-balance <value>', 'Maximum balance')
+	.action(async ({ max, minBalance, maxBalance, json, addressesOnly, csv }) => {
 		snx
-			.rewards({ max })
+			.rewards({ max, minBalance, maxBalance })
 			.then(results => (addressesOnly ? results.map(({ address }) => address) : results))
 			.then(logResults({ json, csv }))
 			.then(showResultCount({ max }));
