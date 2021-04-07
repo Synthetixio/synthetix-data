@@ -650,17 +650,19 @@ module.exports = {
 						'timestamp', // the timestamp when this transaction happened
 						'block', // the block in which this transaction happened
 						'value', // the issued amount in sUSD
+						'totalIssuedSUSD', // the global debt size in SUSD
 					],
 				},
 			})
 				.then(results =>
-					results.map(({ id, account, timestamp, block, value }) => ({
+					results.map(({ id, account, timestamp, block, value, totalIssuedSUSD }) => ({
 						hash: getHashFromId(id),
 						account,
 						timestamp: Number(timestamp * 1000),
 						block: Number(block),
 						value: value / 1e18,
 						type: 'issued',
+						totalIssuedSUSD: totalIssuedSUSD / 1e18,
 					})),
 				)
 				.catch(err => console.error(err));
@@ -686,17 +688,19 @@ module.exports = {
 						'timestamp', // the timestamp when this transaction happened
 						'block', // the block in which this transaction happened
 						'value', // the burned amount in sUSD
+						'totalIssuedSUSD', // the global debt size in SUSD
 					],
 				},
 			})
 				.then(results =>
-					results.map(({ id, account, timestamp, block, value }) => ({
+					results.map(({ id, account, timestamp, block, value, totalIssuedSUSD }) => ({
 						hash: getHashFromId(id),
 						account,
 						timestamp: Number(timestamp * 1000),
 						block: Number(block),
 						value: value / 1e18,
 						type: 'burned',
+						totalIssuedSUSD: totalIssuedSUSD / 1e18,
 					})),
 				)
 				.catch(err => console.error(err));
