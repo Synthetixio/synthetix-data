@@ -666,6 +666,38 @@ module.exports = {
 				.catch(err => console.error(err));
 		},
 
+		dailyIssued({ max = 100, minTimestamp = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.snx,
+				max,
+				query: {
+					entity: 'dailyIssueds',
+					selection: {
+						orderBy: 'id',
+						orderDirection: 'desc',
+						where: {
+							// convert to dayId
+							id_gte: minTimestamp ? Math.floor(minTimestamp / 86400) : undefined,
+						},
+					},
+					properties: [
+						'id', // the dayId
+						'value', // the total issued amount in sUSD on this day
+						'totalDebt', // total debt on this day
+					],
+				},
+			})
+				.then(results =>
+					results.map(({ id, totalDebt, value }) => ({
+						timestamp: id * 86400,
+						value: value / 1e18,
+						totalDebt: totalDebt / 1e18,
+						type: 'issued',
+					})),
+				)
+				.catch(err => console.error(err));
+		},
+
 		burned({ max = 100, account = undefined, minBlock = undefined } = {}) {
 			return pageResults({
 				api: graphAPIEndpoints.snx,
@@ -696,6 +728,38 @@ module.exports = {
 						timestamp: Number(timestamp * 1000),
 						block: Number(block),
 						value: value / 1e18,
+						type: 'burned',
+					})),
+				)
+				.catch(err => console.error(err));
+		},
+
+		dailyBurned({ max = 100, minTimestamp = undefined } = {}) {
+			return pageResults({
+				api: graphAPIEndpoints.snx,
+				max,
+				query: {
+					entity: 'dailyBurneds',
+					selection: {
+						orderBy: 'id',
+						orderDirection: 'desc',
+						where: {
+							// convert to dayId
+							id_gte: minTimestamp ? Math.floor(minTimestamp / 86400) : undefined,
+						},
+					},
+					properties: [
+						'id', // the dayId
+						'value', // the total burned amount in sUSD on this day
+						'totalDebt', // total debt on this day
+					],
+				},
+			})
+				.then(results =>
+					results.map(({ id, totalDebt, value }) => ({
+						timestamp: id * 86400,
+						value: value / 1e18,
+						totalDebt: totalDebt / 1e18,
 						type: 'burned',
 					})),
 				)
