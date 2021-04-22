@@ -689,7 +689,6 @@ module.exports = {
 			})
 				.then(results =>
 					results.map(({ id, totalDebt, value }) => ({
-						hash: getHashFromId(id),
 						timestamp: id * 86400,
 						value: value / 1e18,
 						totalDebt: totalDebt / 1e18,
@@ -758,7 +757,6 @@ module.exports = {
 			})
 				.then(results =>
 					results.map(({ id, totalDebt, value }) => ({
-						hash: getHashFromId(id),
 						timestamp: id * 86400,
 						value: value / 1e18,
 						totalDebt: totalDebt / 1e18,
